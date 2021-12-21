@@ -484,7 +484,7 @@ Access Tier = Proxy Node + Authentication
 
 每个Storage Node上存储的对象在逻辑上又由3个层次组成：Account、Container及Object。
 
-<img src="/Swift对象组织结构.png" alt="Swift对象组织结构" style="zoom:=75%;" />
+<img src="../image/img/Swift对象组织结构.png" alt="Swift对象组织结构" style="zoom:=75%;" />
 
 Account在对象的存储过程中实现顶层的隔离，代表的并不是个人账户，而是租户，一个Account可以被多个个人账户共同使用；Container代表了一组对象的封装，类似文件夹或目录，但是Container不能嵌套。
 
