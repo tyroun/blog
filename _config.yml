@@ -16,6 +16,8 @@ plugins:
   - jekyll-avatar
   - jekyll-mentions
 
+markdown: kramdown
+
 exclude:
   - Makefile
   - CNAME
