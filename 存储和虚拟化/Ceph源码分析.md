@@ -2,7 +2,7 @@
 
 ## 1.1 Ceph的发展历程
 
-![image-20210927163525811](C:\work\book\My-Note.git\image\Ceph源码分析\image-20210927163525811.png)
+![image-20210927163525811](../image/Ceph源码分析/image-20210927163525811.png)
 
 ## 1.2 Ceph的设计目标
 
@@ -10,7 +10,7 @@
 
 ## 1.3 Ceph基本架构图
 
-<img src="C:\work\book\My-Note.git\image\Ceph源码分析\image-20210927164905727.png" alt="image-20210927164905727" style="zoom:67%;" />
+<img src="../image/Ceph源码分析/image-20210927164905727.png" alt="image-20210927164905727" style="zoom:67%;" />
 
 * 最底层是**RADOS**(reliable autonomous distributed object store)
 
@@ -93,7 +93,7 @@ Cluster Map保存了系统的全局信息，主要包括：
 
 对象是数据存储的基本单元，一般默认4MB大小
 
-![image-20210927171100622](C:\work\book\My-Note.git\image\Ceph源码分析\image-20210927171100622.png)
+![image-20210927171100622](../image/Ceph源码分析/image-20210927171100622.png)
 
 一个对象由3部分组成
 
@@ -107,7 +107,7 @@ pool是个抽象的存储池。分replicated和Erasure Code两种
 
 pool有多个PG(placement group)组成，PG由多个对象租出，这些对象放在不同的OSD上
 
-<img src="C:\work\book\My-Note.git\image\Ceph源码分析\image-20210927171924892.png" alt="image-20210927171924892" style="zoom:67%;" />
+<img src="../image/Ceph源码分析/image-20210927171924892.png" alt="image-20210927171924892" style="zoom:67%;" />
 
 * PG1和PG2同属于1个pool，所以是2副本
 * PG1所有对象的主从副本都在OSD1和OSD2上。PG2的对象在OSD2和OSD3上
@@ -132,7 +132,7 @@ pg_id = hash(object_id) % pg_num
 
 写操作如下
 
-<img src="C:\work\book\My-Note.git\image\Ceph源码分析\image-20210927172956441.png" alt="image-20210927172956441" style="zoom:60%;" />
+<img src="../image/Ceph源码分析/image-20210927172956441.png" alt="image-20210927172956441" style="zoom:60%;" />
 
 1. Client向PG所在的主OSD发写
 2. 主OSD一边写入本地，一边向2个从OSD发写副本请求
@@ -188,7 +188,7 @@ N份元数据，允许M份出错。一共存M+N份
 
 RADOS以pool为单位实现分层存储。Cache Pool 和 Data Pool。通过Cache Tier来管理热点数据。
 
-<img src="C:\work\book\My-Note.git\image\Ceph源码分析\image-20211001204827477.png" alt="image-20211001204827477" style="zoom:67%;" />
+<img src="../image/Ceph源码分析/image-20211001204827477.png" alt="image-20211001204827477" style="zoom:67%;" />
 
 ### 1.5.12 Scrub
 

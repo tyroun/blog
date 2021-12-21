@@ -1,3 +1,4 @@
+{% raw %}
 # 第1章 ES6基础
 
 ## 1.1 let及const
@@ -473,7 +474,7 @@ map.clear();
 
 在React中，每一个组件都会生成一个虚拟DOM树。这个DOM树会以纯对象的方式来对视图（真实DOM）进行描述
 
-<img src="C:\work\book\My-Note.git\image\React工程师修炼指南\image-20211218195730052.png" alt="image-20211218195730052" style="zoom:100%;" />
+<img src="../image/React工程师修炼指南/image-20211218195730052.png" alt="image-20211218195730052" style="zoom:100%;" />
 
 ## 2.2 ReactDOM
 
@@ -657,7 +658,7 @@ npm i create-react-app-g
 
 打开my-app目录，可以看到以下结构
 
-![image-20211218205725761](C:\work\book\My-Note.git\image\React工程师修炼指南\image-20211218205725761.png)
+![image-20211218205725761](../image/React工程师修炼指南/image-20211218205725761.png)
 
 1. README.md，这个文件用于编写项目介绍使用
 2. node_modules，在项目中安装的依赖都会放在这个文件夹下
@@ -1018,3 +1019,4 @@ function App(props){
 
 ### 2.13.1 常用Hooks
 
+{% endraw %}

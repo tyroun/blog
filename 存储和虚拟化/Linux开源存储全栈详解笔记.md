@@ -101,13 +101,13 @@ Linux下的独立开源存储方案不太多，目前用得比较多的是OpenDe
 
 ### 1.2.5 开源云计算数据存储平台
 
-![image-20210916161140883](C:\Users\tyroun.liu\AppData\Roaming\Typora\typora-user-images\image-20210916161140883.png)
+![image-20210916161140883](../image/typora-user-images/image-20210916161140883.png)
 
 不同层次提供云计算
 
 ### 1.2.6 存储管理和软件定义存储
 
-![image-20210916161646584](C:\Users\tyroun.liu\AppData\Roaming\Typora\typora-user-images\image-20210916161646584.png)
+![image-20210916161646584](../image/typora-user-images/image-20210916161646584.png)
 
 SNIA认为SDS应该包括：
 
@@ -147,7 +147,7 @@ SNIA认为SDS应该包括：
 
 分布式存储系统一般包括三大组件：元数据服务器（也称为主控服务器）、客户端及数据服务器。
 
-![image-20210920175117704](C:\Users\tyroun.liu\AppData\Roaming\Typora\typora-user-images\image-20210920175117704.png)
+![image-20210920175117704](../image/typora-user-images/image-20210920175117704.png)
 
 #### 1 元数据（主控）服务器
 
@@ -378,7 +378,7 @@ struct bio_vec {
 }
 ```
 
-<img src="C:\Users\tyroun.liu\AppData\Roaming\Typora\typora-user-images\image-20210920225413594.png" alt="image-20210920225413594" style="zoom:50%;" />
+<img src="../image/typora-user-images/image-20210920225413594.png" alt="image-20210920225413594" style="zoom:50%;" />
 
 bio在块层会被转化为request，多个连续的bio可以合并到一个request中，生成的request会继续进行合并、排序，并最终调用块设备驱动的接口将request从块层的request队列（request_queue）中移到驱动层进行处理，以完成I/O请求在通用块层的整个处理流程。
 
@@ -388,11 +388,11 @@ bio在块层会被转化为request，多个连续的bio可以合并到一个requ
 
 在2.6内核，基于device mapper机制实现了第二个版本LVM2。
 
-<img src="C:\Users\tyroun.liu\AppData\Roaming\Typora\typora-user-images\image-20210920225836095.png" alt="LVM分层" style="zoom:30%;" /> 
+<img src="../image/typora-user-images/image-20210920225836095.png" alt="LVM分层" style="zoom:30%;" /> 
 
   									LVM分层
 
-<img src="C:\Users\tyroun.liu\AppData\Roaming\Typora\typora-user-images\image-20210920230513311.png" alt="image-20210920230513311" style="zoom:50%;" /> 
+<img src="../image/typora-user-images/image-20210920230513311.png" alt="image-20210920230513311" style="zoom:50%;" /> 
 
 ​														device mapper架构
 
