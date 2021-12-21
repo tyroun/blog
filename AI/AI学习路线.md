@@ -4,7 +4,7 @@
 
 # 基础知识
 
-![img](C:\work\book\My-Note.git\image\AI学习路线\v2-8564ebd2c633f76db0110bdd128811f7_720w.jpg)
+![img](../image/AI学习路线/v2-8564ebd2c633f76db0110bdd128811f7_720w.jpg)
 
 
 
