@@ -219,7 +219,7 @@ Sheepdog是一个开源的分布式存储系统，于2009年由日本NTT实验�
 
 ## 3.1 Linux存储系统概述
 
-![Linux-storage-stack-diagram_v4.10](C:\work\book\My-Note.git\trunk\img\Linux-storage-stack-diagram_v4.10.svg)
+![Linux-storage-stack-diagram_v4.10](../image/img/Linux-storage-stack-diagram_v4.10.svg)
 
 POSIX文件接口 -> VFS -> Page Cache -> BIO -> (LVM/bdcache) -> 块层 -> 块设备 -> 不同协议 -> 物理设备
 
@@ -464,7 +464,7 @@ OpenStack比较重要的组件有计算、对象存储、认证、用户界面�
 
 如下图所示，Swift = 访问层(Access Tier) + 存储层(Storage Node)
 
-<img src="C:\work\book\My-Note.git\trunk\img\Swift体系.png" alt="Swift体系结构" style="zoom:50%;" />
+<img src="../image/img/Swift体系.png" alt="Swift体系结构" style="zoom:50%;" />
 
 Access Tier = Proxy Node + Authentication
 
@@ -536,7 +536,7 @@ Swift引入了环的概念
 
 * Partition移位值（Partition Shift Value）：表示在哈希之后将Object名字进行二进制位移的位数。
 
-  <img src="C:\work\book\My-Note.git\trunk\img\环数据结构.png" alt="环数据结构" style="zoom:55%;" />
+  <img src="../image/img/环数据结构.png" alt="环数据结构" style="zoom:55%;" />
 
 每个Partition有3个副本，每个单元格数字表示节点名称。
 
@@ -588,7 +588,7 @@ Updater对那些因为负荷不足而导致失败的Account或Container进行更
 
 Cinder则是在虚拟机与具体存储设备之间引入了一层“逻辑存储卷”的抽象。Cinder提供的RESTful API则主要是针对逻辑存储卷的管理
 
-<img src="C:\work\book\My-Note.git\trunk\img\cinder架构.png" alt="cinder架构" style="zoom:55%;" />
+<img src="../image/img/cinder架构.png" alt="cinder架构" style="zoom:55%;" />
 
 * cinder-api是进入Cinder的HTTP接口
 * cinder-volume是运行在存储节点上管理具体存储设备的存储空间，每个存储节点上都会运行一个cinder-volume服务，多个这样的节点便构成了一个存储资源池。
