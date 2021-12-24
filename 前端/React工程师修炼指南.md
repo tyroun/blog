@@ -1019,4 +1019,387 @@ function App(props){
 
 ### 2.13.1 常用Hooks
 
+#### 1 useState
+
+```js
+//函数原型
+const [state,setState] = useState(initialState);
+
+//用法
+import React. {useState} from 'react';
+function App(){
+    const [name,setName] = useState("xxx");
+    //多个state
+    const [person,setPerson] = useState({name:"xxx",age:20});
+    return <div>
+    	<p>{name}</p>
+    	<button onClick={ () = > {
+            setName("aaa");
+            setPerson(...person,name:"aaa");
+        }}>显示全称</button>
+    </div>;
+}
+export default App;
+```
+
+1. setState是个异步方法
+2. 没有合并多个state功能，更新时所有state一同更新。参考上面多个state示例
+3. 同一个组件中可以使用useState创建多个state
+
+#### 2 useRef
+
+```js
+import React. {useRef} from 'react';
+function App(){
+    let elf = useRef();//类似createRef
+    return <div>
+    	<p ref={elf}>XXX</p>
+    	<button onClick={ () = > {
+            console.log(elf.current);
+        }}>显示全称</button>
+    </div>;
+}
+export default App;
+```
+
+#### 3 useEffect
+
+useEffect就相当于componentDidMount、componentDidUpdate和componentWillUnmount的集合体
+
+```js
+import React. {useState,useEffect} from 'react';
+function Course(){
+    const [course,setCourse] = useState("课程");
+    const [num,setNum] = useState(1);
+    useEffect(() = > {
+        console.log("xxx");
+    	return () = > {
+            console.log("yyy");//卸载时执行
+        }
+    },[num]);//只有num改动的时候，才会执行回调函数,在数组中放入依赖数据
+	return <div>
+        <select
+		value = {course}
+		onChange = {({target}) = > {setCourse(target.value);} }
+		>
+            <option value="xxx">xxx</option>
+        </select>
+		<input
+		 type = "number"
+		 value = {num}
+		 onChange = {({target}) = > {setNum(target.value);}}
+		/>
+    </div>
+}
+
+function App(){
+    let elf = useRef();//类似createRef
+    return <div>
+    	<p ref={elf}>XXX</p>
+    	<button onClick={ () = > {
+            console.log(elf.current);
+        }}>显示全称</button>
+    </div>;
+}
+export default App;
+```
+
+组件挂载→执行副作用（回调函数）→组件更新→执行清理函数（返还函数）→执行副作用（回调函数）→组件准备卸载→执行清理函数（返还函数）→组件卸载
+
+1. componentDidMount。如果只想要在挂载后执行，可以把依赖参数置为空，这样在更新时就不会执行该副作用了。
+
+2. componentWillUnmount。如果只想要在卸载前执行，同样把依赖参数置为空，该副作用的返还函数就会在卸载前执行。
+
+3. componentDidUpdate
+
+   需要判断值是否有更新，用useRef
+
+```js
+function Course(){
+    const [course,setCourse] = useState("课程");
+    const [num,setNum] = useState(1);
+    let preCourse = useRef(course);
+    let preNum = useRef(num);
+    useEffect( () = > {
+        console.log("组件挂载阶段");
+    	return () = > {
+            console.log("组件卸载阶段");
+        }
+    },[]);//绑定的数组一定要是空，不传的话表示任意组件都会引起更新
+	useEffect( () = > {
+        if(course != prevCourse.current || num != preNum.current){
+            console.log("组件更新");
+            //ref不会自动更新，需要手动更新
+            preCourse.current = course;
+            preNum.current = num;
+        }
+    },[course,num]);
+}
+```
+
+### 2.13.2 Hook使用规则
+
+1. 只能在函数式组件和自定义Hooks之中调用Hooks，普通函数或者类组件中不能使用Hooks。
+2. 只能在函数的第一层调用Hooks
+
+### 2.13.2 自定义Hook
+
+```js
+function useScrollY(){
+    let [scrollY,setScrollY] = setState(0);
+    function scroll(){
+        setScrollY(window.scrollY);
+    }
+    useEffect(() = > {
+        window.addEventListener("scroll",scroll);
+    	return () = > {
+          window.removeEventListener("scroll",scroll);  
+        };
+    },[]);
+	return scrollY;
+}
+```
+
+
+
+# 3 基于Redux状态管理
+
+## 3.1 Redux使用
+
+1. store：一个数据容器，用来管理和保存这个项目的state。在整个应用中只能有一个store。
+2. state：一个对象，在state中存储相应的数据，当开发者需要使用数据时，则可以通过store提供的方法来获取state。
+3. action：一个通知命令，用于对state进行修改。通过store提供的方法，可以发起action完成对state的修改。
+
+### 3.1.1 action、createStore和reducer函数
+
+```js
+import {createStore} from "redux";
+function reducer(state={count:1},action){
+    switch(action.type){
+        case "PLUS":
+            return {count:state.count+1};
+        case "MINUS":
+            return {count:state.count-1};
+    }
+    return state;
+}
+let store = createStore(reducer);
+function render(){
+    let state = store.getState(); //获取state
+    ReactDOM.render(
+        <button onClick = {()=>{
+        store.dispatch({type:"PLUS"});
+        }}>
+        +++</button> //自增按钮
+		<span>{state.count}</span> //显示 
+    );
+}
+let unSubscribe = store.subscribe(render);
+setTimeout(()=>{unSubscribe();},1000);//取消订阅
+```
+
+***reducer一定要是个纯函数***
+
+### 3.1.2 store
+
+store提供了3种方法
+
+1. getState：该方法用于获取state。dispatch（action）：该方法用于发起一个action。
+2. subscribe（listener）：该方法会注册一个监听器监听state发生的变化。另外该方法的返回值会返回一个注销监听器的方法，用于取消监听器。
+
+流程图如下
+
+![image-20211222184853763](../image/React工程师修炼指南/image-20211222184853763.png)
+
+1. reducer创建store
+2. store传state => 视图
+3. 视图被操作时通过dispath把action给reducer
+4. reducer更新state，并通过store再传给视图
+
+## 3.2 React-Redux
+
+### 3.2.1 安装和配置
+
+store.js里创建store和reducer
+
+```js
+import {createStore} from "redux";
+function reducer(state={count:1},action){
+    switch(action.type){
+        case "PLUS":
+            return {count:state.count+1};
+        case "MINUS":
+            return {count:state.count-1};
+    }
+    return state;
+}
+let store = createStore(reducer);
+export default store;
+```
+
+在整个项目在外层使用Provider组件。 index.js
+
+```js
+import store from 'store.js'
+ReactDOM.render(
+    <Provider store = {store}>
+    	<App/>
+    </Provider>
+,document.getElementById('root'));
+```
+
+### 3.2.2 connect
+
+React-Redux中提供了一个connect方法用于接收Provider传递下来的store中的state和dispatch
+
+```js
+connect(state => newProps)(Component)
+```
+
+state是Redux的state，把store中的state作为props传给组件Component
+
+state => newProps表示定义一个转换函数，把state转成props
+
+connect返回一个新的组件给父组件调用
+
+### 3.2.3 Hooks
+
+1. const state = useSelector(state=>state) 返回store中的state
+2. const dispatch = useDispatch() 返回store的dispatch方法
+3. const store = useStore() 返回store
+
+## 3.4 Reducer拆分与合并
+
+利用combineReducers合并分模块的reducer
+
+```js
+function user(user={...},action){
+	swtich(action.type){
+     ...
+	}
+    return user;
+}
+function todo(todo={...},action){
+	switch(action.type){
+    	...
+	}      
+    return todo;
+}
+const store = createStore(combineReducers({user,todo}));
+```
+
+# 4 React-Router
+
+## 4.1 什么是React-Router
+
+为了让每次切换页面的时候，不要重新渲染整个页面，所以采用SPA(单页面应用)。所有界面更新通过AJAX+DOM操作完成。
+
+使用了SPA之后，视图都是在一个页面通过JavaScript动态处理的。这时就需要在前端建立一套路由规则，根据URL的在页面动态更新DOM来显示不同的视图
+
+前端的路由其实就是url到DOM的路由
+
+## 4.2 React-Router安装与配置
+
+WEB端的Router中提供了两种不同的模式
+
+1. HashRouter是基于hash实现的一种路由方式，URL变化时主要是hash值进行变化。如http://127.0.0.1:3000/#/about、http://127.0.0.1:3000/#/user，可以看到URL里一定会有一个#号，也就是hash标识。hash模式的好处是一定不会向服务端发送请求，但URL里一定会有一个#号
+2. BrowserRouter则是基于H5 history API的一种路由方式。history的URL切换基于history提供的pushState方法，好处是URL和之前直接请求后端的URL没有什么区别，如http://127.0.0.1:3000/about、http://127.0.0.1:3000/user。当然问题也同样突出，在部署线上时，要注意直接输入URL还是会发起后端请求，所以后端一样也要做处理。
+
+需要在最外层告诉React用哪种路由
+
+```js
+ReactDOM.render(
+    <BrowserRouter>
+    	<App/>
+    </BrowserRouter>
+,document.getElementById('root'));
+```
+
+## 4.3 Route组件
+
+使用Route组件关联path和UI。代码格式如下：＜Route path=＂/user＂component={UserView}/＞。当URL和path匹配时，就会去渲染UserView
+
+### 4.3.1 路由匹配
+
+默认是模糊匹配
+
+```js
+<Route path="/about" component={AboutView}/>
+<Route path="/about" exact component={AboutView}/> //精确匹配
+<Route path={["/about","/index"]} exact component={AboutView}/> //多路径匹配
+<Route path="/about/:page" exact component={AboutView}/> //带参数匹配
+```
+
+### 4.3.2 路由渲染
+
+一种是通过component声明对应的组件
+
+一种是通过render直接输入函数
+
+## 4.4 路由信息
+
+用Route匹配路由时，会有以下参数作为props传入组件
+
+### 1 history
+
+1. length，该域下历史记录的条目数。
+2. location，URL中的信息，具体参考location对象。
+3. push（path，[state]），将新条目推入历史记录堆栈
+4. replace（path，[state]），替换历史记录上的当前条目。这同样会引发URL跳转，不同的是，此时会在历史记录中替换掉之前的记录。
+5. go（n），跳转n步历史记录，正数前进n步，负数后退n步。
+6. goBack()，等同于go（-1）返回上一步。
+7. goForward()，等同于go（1）前进一步。
+
+### 2 location
+
+1. pathname，URL的路径，格式为字符串。
+2. search，URL中的search片段，格式为字符串。
+3. hash，URL中的hash片段，格式为字符串。
+4. state，路由跳转时传递的额外信息，如push（path，state）推送过来的state信息，格式为对象。
+
+### 3 match
+
+1. params，接收path参数（:page）传递过来的相关信息，格式为对象。
+2. isExact，指是否是精确匹配，格式为布尔值。
+3. path，Route中定义的path路径，格式为字符串。
+4. URL，当前的URL路径，格式为字符串。
+
+## 4.5withRouter和Router Hooks
+
+ ### 4.5.1 Hooks
+
+1）useHistory调用该Hook会返回history对象。
+
+2）useLocation调用该Hook会返回location对象。
+
+3）useRouteMatch调用该Hook会返回match对象。
+
+4）useParams调用该Hook会返回match对象中的params，也就是path传递的参数
+
+## 4.6 链接跳转
+
+不能用<a>标签，因为会引起整个页面重新渲染
+
+### 4.6.1 Link组件
+
+to属性可以是对象或者字符串
+
+```js
+<Link to="/about">About</Link>
+<Link to={{
+          pathname:"/about",
+          search:"?search=xxx",
+          hash:"#111",
+          state:{info:"ohters"}
+}}>About</Link>
+```
+
+### 4.6.2 NavLink组件
+
+用作导航栏中的组件
+
+
+
+
+
 {% endraw %}
