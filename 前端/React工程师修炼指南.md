@@ -456,6 +456,31 @@ map.delete("name");
 map.clear();
 ```
 
+## 1.10 其他地方看来的语法
+
+### 1.10.1 扩展操作符
+
+扩展操作符（spread operator）并不是ES6语法的一部分，甚至都不是ES Next语法的一部分，但是因为babel的存在，被广泛使用
+
+```js
+return {...state,[counterCaption]: state[counterCaption]+1};
+//表示部分修改state上的成员，等同于如下代码
+const newState = Object.assign({},state);
+newState[counterCaption]++;
+return newState
+```
+
+扩展操作符也可被用于去除掉某一部分数据
+
+```js
+const testObject={A:1,B:2,C:3};
+const {A,..otherObject} = testObject; //otherObject就是其他数据
+```
+
+
+
+
+
 # 第2章 React详解
 
 ## 2.1 为什么使用React
@@ -1397,6 +1422,270 @@ to属性可以是对象或者字符串
 ### 4.6.2 NavLink组件
 
 用作导航栏中的组件
+
+# ES6 其他书籍的内容
+
+## 深入理解ES6
+
+##  8 迭代器Iterator和生成器Generator
+
+为了解决多个循环语句嵌套增加代码复杂性的问题，ES6引入了Iterator
+
+### 8.1 迭代器
+
+Iterator特征
+
+1. next()方法返回一个结果对象
+2. 结果对象有两个属性， value表示值，done表示是否结束
+
+### 8.2 生成器
+
+生成器是一种***返回迭代器***的函数，通过function关键字后的星号（*）来表示
+
+```js
+function *createIterator(){
+    yield 1;
+    yield 2;
+    yield 3;
+}
+
+let iterator = createIterator();
+
+console.log(iterator.next().value);//1
+console.log(iterator.next().value);//2
+console.log(iterator.next().value);//3
+```
+
+每当执行完一条yield语句后函数就会自动停止执行
+
+#### yield使用限制
+
+yield关键字只可在生成器内部使用，且只能在生成器函数最外层
+
+不能用箭头函数来创建生成器
+
+#### 对象的生成器函数
+
+```js
+let o = {
+    *createIterator(items){
+        for(let i=0;i < items.length;i++){
+            yield items[i];
+        }
+    }
+};
+let iterator = o.createIterator([1,2,3]);
+```
+
+### 8.3 可迭代对象
+
+对象的Symbol.iterator属性为true的都是可迭代对象。(Set,数组，Map)
+
+```js
+let values = [1,2,3];
+//使用for-of遍历
+for(let num of values){
+    console.log(num);
+}
+
+//访问默认的迭代器
+let iterator = values[Symbol.iterator]();
+console.log(iterator.next());
+
+//创建可迭代对象
+let collection = {
+    items: [],
+    *[Symbol.iterator](){
+        for(let item of this.items){
+            yield item;
+        }
+    }
+}
+```
+
+### 8.4 内建迭代器
+
+#### 8.4.1 集合对象迭代器(Array,Set,Map)
+
+1.  entries()　返回一个迭代器，其值为多个键值对。
+2.  values()　返回一个迭代器，其值为集合的值。
+3.  keys()　返回一个迭代器，其值为集合中的所有键名。
+
+Array和Set默认迭代器是values()方法，Map是entries()方法
+
+#### 8.4.2 字符串迭代器
+
+当作字符数组遍历
+
+### 8.5 高级迭代器功能
+
+#### 8.5.1 给迭代器传参
+
+如果给迭代器的next()方法传递参数，则这个参数的值就会替代生成器内部上一条yield语句的返回值
+
+```js
+function *createIterator(){
+    let first = yield 1;
+    let second = yield first + 2;
+    yield second + 3;
+}
+
+let iterator = createIterator();
+
+console.log(iterator.next()); //{value: 1, done: false}
+console.log(iterator.next(4)); //{value: 4+2=6, done: false}
+console.log(iterator.next(5)); //{value: 5+3=8, done: false}
+console.log(iterator.next()); //{value: undefined, done: true}
+```
+
+#### 8.5.2 在迭代器中抛出错误
+
+将错误对象传给throw()方法后，在迭代器继续执行时其会被抛出
+
+throw()和next()类似可以返回对象
+
+```js
+function *createIterator(){
+    let first = yield 1;
+    let second;
+    try {
+       second = yield first + 2;
+    }catch(ex){
+       second = 6; //捕获到错误
+    }
+    yield second + 3;
+}
+
+let iterator = createIterator();
+
+console.log(iterator.next()); //{value: 1, done: false}
+console.log(iterator.next(4)); //{value: 4+2=6, done: false}
+console.log(iterator.throw(new Error("Boom"))); //{value: 6+3=9, done: false}
+console.log(iterator.next()); //{value: undefined, done: true}
+```
+
+#### 8.5.3 生成器返回语句
+
+在生成器中，return表示所有操作已经完成，属性done被设置为true；如果同时提供了相应的值，则属性value会被设置为这个值
+
+```js
+function *createIterator(){
+    yield 1;
+	return 42;
+	yield 2;
+}
+
+let iterator = createIterator();
+
+console.log(iterator.next()); //{value: 1, done: false}
+console.log(iterator.next()); //{value: 42, done: true}
+console.log(iterator.next()); //{value: undefined, done: true}
+```
+
+#### 8.5.4 委托生成器
+
+在生成器内部调用生成器
+
+```js
+function *createNumberIteration(){
+    yield 1;
+    yield 2;
+}
+
+function *createColorIterator(){
+    yield "red";
+    yield "green";
+}
+
+function *createCombinedIterator(){
+    yield *createNumberIterator();
+    yield *createColorIterator();
+    yield true;
+}
+
+var iterator = createCombinedIterator();
+
+console.log(iteartor.next()); //{value:1,done:false}
+console.log(iteartor.next()); //{value:2,done:false}
+console.log(iteartor.next()); //{value:"red",done:false}
+console.log(iteartor.next()); //{value:"blue",done:false}
+console.log(iteartor.next()); //{value:true,done:false}
+console.log(iteartor.next()); //{value:undefined,done:true}
+```
+
+## ES6的异步执行
+
+### 基于Promise和yield的异步操作
+
+因为是多个不同的Promise对象，也就是指不同参数输入的异步操作。又要保证每次上一个异步操作完成再执行下一个异步操作。如果不用yield，直接调用Promise写起来就会很难懂。
+
+```js
+//Promise的异步对象
+let tick = (duration)=>{
+  return new Promise((resolve)=>{
+    setTimeout(function () {
+      console.log(duration,new Date());
+      resolve(duration);
+    },duration);
+  });
+};
+//产生器，用于以简单的同步写法，来写清楚异步调用的顺序
+function *generator() {
+  var result = yield tick(2000);
+  console.log('result = ',result);
+  result = yield tick(4000);
+  console.log('result = ',result);
+  result = yield tick(3000);
+  console.log('result = ',result);
+}
+
+//运行器，循环执行所有产生器中的异步调用
+let run = (generator,res)=>{
+  var result = generator.next(res);
+  if(result.done) return;
+  result.value.then((res)=>{
+    run(generator,res);
+  });
+}
+
+run(generator());
+//直接用Promise写,这样还是不能解决回调地狱的问题，因为还是长得像回调
+//因为是不同的Promise，所以不能用Promise提供的不停地then().then()的方案
+let tick1 = tick(2000);
+let tick2 = tick(4000);
+let tick3 = tick(3000);
+tick1.then((res)=>{
+   tick2.then((res)=>{
+       tick3.then();
+   }); 
+});
+```
+
+### 基于async和await的异步操作
+
+```js
+let tick = (duration)=>{
+  return new Promise((resolve)=>{
+    setTimeout(function () {
+      console.log(new Date());
+      resolve(duration);
+    },duration);
+  });
+}
+
+async function asyncFunc(){
+  var result = await tick(1000);
+  console.log(result);
+  result = await tick(2000);
+  console.log(result);
+  result = await tick(3000);
+  console.log(result);
+}
+
+asyncFunc(); //相当于在语言层面上，实现了run的函数。更简洁了
+```
+
+
 
 
 
