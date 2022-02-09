@@ -1,6 +1,6 @@
 {% raw %}
 
-https://blog.didispace.com/spring-boot-learning-2x/
+
 
 # Spring Boot 2.x 基础教程
 
