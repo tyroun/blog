@@ -616,7 +616,7 @@ class AddTodo extends Component {
   onSubmit(ev) {
     ev.preventDefault(); //取消post form引发的网页跳转
 
-    const input = this.input;
+    const input = this.input;//ref的DOM node记录在input里
     if (!input.value.trim()) {
       return;
     }
@@ -633,6 +633,7 @@ class AddTodo extends Component {
     return (
       <div className="add-todo">
         <form onSubmit={this.onSubmit}>
+          //ref在这里引用
           <input className="new-todo" ref={this.refInput} />
           <button className="add-btn" type="submit">
             添加
@@ -668,7 +669,7 @@ const TodoList = ({todos, onToggleTodo, onRemoveTodo}) => {
     {
       todos.map((item) => (
         <TodoItem
-          key={item.id}
+          key={item.id} //为了渲染加速
           text={item.text}
           completed={item.completed}
           onToggle={() => onToggleTodo(item.id)}
@@ -682,7 +683,7 @@ const TodoList = ({todos, onToggleTodo, onRemoveTodo}) => {
 TodoList.propTypes = {
   todos: PropTypes.array.isRequired
 };
-
+//store的filter状态来影响显示
 const selectVisibleTodos = (todos, filter) => {
   switch (filter) {
     case FilterTypes.ALL:
@@ -713,7 +714,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-/*
+/* 简写
 const mapDispatchToProps = (dispatch) => bindActionCreators({
   onToggleTodo: toggleTodo,
   onRemoveTodo: removeTodo
@@ -722,6 +723,120 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
 
 export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
 ```
+
+todos/views/todoItem.js
+
+```js
+const TodoItem = ({onToggle, onRemove, completed, text}) => {
+  const checkedProp = completed ? {checked: true} : {};
+  return (
+    <li
+      className="todo-item"
+      style={{
+        textDecoration: completed ? 'line-through' : 'none'
+      }}
+    >
+      <input className="toggle" type="checkbox" {...checkedProp} readOnly onClick={onToggle} />
+      <label className="text">{text}</label>
+      <button className="remove" onClick={onRemove}>×</button>
+    </li>
+  )
+}
+```
+
+
+
+# 5 React组件的性能优化
+
+## 5.1 单个组件的优化
+
+以上组件如果有两个TodoItem，点击一个check的时候，会造成另一个组件重新渲染
+
+因为点击check为引发TodoList重新渲染，即使传给子组件的prop没有更新，也会造成TodoList下所有子组件重新渲染
+
+需要在todoItem.js中加入以下代码
+
+```js
+shouldComponentUpdate(nextProps,nextState) {
+    return (nextProps.completed !== this.props.completed) ||
+        (nextProps.text !== this.props.text);
+}
+```
+
+connect会自动为这个组件添加以上方法，判断只有当props变化时，才会渲染
+
+但上面即使在todoItem.js加入以下代码，还是每次都会被渲染
+
+```js
+export default connect()(TodoItem);
+```
+
+原因在于shouldComponentUpdate做的是对于props的浅比较，只看props里是不是对同一个对象的引用。所以如下代码每次都会产生一个新的对象引用传递给props
+
+```js
+onToggle={() => onToggleTodo(item.id)}
+onRemove={() => onRemoveTodo(item.id)}
+```
+
+为了每次传入同样的对象，修改如下
+
+todolist.js
+
+```js
+ <TodoItem
+    key={item.id} //为了渲染加速
+    text={item.text}
+    completed={item.completed}
+    onToggle={onToggleTodo}
+    onRemove={onRemoveTodo}
+/>
+```
+
+todoItem.js
+
+```js
+const mapDispatchToProps = (dispatch, ownProps) => ({
+   onToggleItem: () => ownProps.onToggle(ownProps.id)
+});
+```
+
+## 5.2 多个组件的优化
+
+### 5.2.1 React的Reconciliation过程
+
+React如何在virtual DOM 树中找到不同之处然后触发更新，这个过程叫做Reconciliation
+
+React实际采用的算法需要的时间复杂度是O(N)
+
+1. 如果根节点不同，直接重构根节点下所有DOM树
+2. 子节点比较标签的属性和内容，有变化的才更新
+3. 如果子节点是react组件，按如下方式引发组件更新
+   1. shouldComponentUpdate  -  return false就不更新
+   2. componentWillReceiveProps
+   3. componentWillUpdate
+   4. render
+   5. componentDidUpdate
+4. 多个子组件，如果子组件顺序变化，会导致全部更新。需要key来保证不做无效更新
+
+### 5.2.2 Key的用法
+
+以下代码如果没有key值，就会需要全部更新
+
+```jsx
+<ul>
+    <TodoItem key={0}></TodoItem> //添加这条不会引起下面两个组件更新
+    <TodoItem key={1}></TodoItem>
+    <TodoItem key={2}></TodoItem>
+</ul>
+```
+
+不要把数组index作为key值，因为每次获取数组的顺序可能会变
+
+key和ref是React保留的两个特殊prop，并没有预期让组件直接访问
+
+## 5.3 用reselect提高数据获取性能
+
+
 
 
 

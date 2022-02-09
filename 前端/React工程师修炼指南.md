@@ -406,12 +406,44 @@ export {
     default
 }; //和上句效果一样
 export {a as c} //a 用 c变量名导出
+//匿名变量导出
+//c.js
+export default {
+    name: "xx",
+    age:20,
+};
+//匿名函数导出
+//d.js
+export default () => {
+  console.log("export");
+};
 
 //b.js
 import A,{a} from "./a.js"
 import {c as d} from "./a.js" //c 用 d 变量名导入
 console.log(A,a); //{name:"xx",age:20} 10
+//匿名导入, 任意名称
+import XXX from c.js
+console.log(c);  //{name:"xx",age:20}
+//匿名函数导入
+import xxxFun from d.js
+xxxFun(); // export
 ```
+
+### 1.8.2 export default 和 export的区别
+
+1.  export default 1个模块只能用1次
+2. import的时候，default的要加{}
+
+```js
+//a.js
+export default function crc32(){...}
+export function crc1(){...}
+
+import crc32 {crc1} from a.js
+```
+
+
 
 ### 1.8.3 按需导入
 
@@ -456,15 +488,38 @@ map.delete("name");
 map.clear();
 ```
 
-## 1.10 其他地方看来的语法
+## 1.10 扩展操作符...
 
-### 1.10.1 扩展操作符
+### 1.10.1 数组转函数参数
+
+它好比 rest 参数的逆运算，将一个数组转为多个函数参数
+
+```js
+function add(x,y){return x+y;}
+var numbers = [4,30];
+add(...numbers); //4+30=34
+
+//push用法
+var arr1=[1,2,3];
+var arr2=[4,5,6];
+arr1.push(...arr2); //[1,2,3,4,5,6]
+```
+
+### 1.10.2 数组合并
+
+```js
+var arr1=[1,2,3];
+var arr2=[4,5,6];
+var arr3 = [...arr1,...arr2]; //[1,2,3,4,5,6]
+```
+
+### 1.10.3 解构赋值和部分替换
 
 扩展操作符（spread operator）并不是ES6语法的一部分，甚至都不是ES Next语法的一部分，但是因为babel的存在，被广泛使用
 
 ```js
 return {...state,[counterCaption]: state[counterCaption]+1};
-//表示部分修改state上的成员，等同于如下代码
+//表示部分修改state上的成员，等同于如下代码。扩展操作符执行了一次浅拷贝
 const newState = Object.assign({},state);
 newState[counterCaption]++;
 return newState
@@ -477,9 +532,11 @@ const testObject={A:1,B:2,C:3};
 const {A,..otherObject} = testObject; //otherObject就是其他数据
 ```
 
+### 1.10.4 字符串转数组
 
-
-
+```js
+[...'hello'] //["h","e",...]
+```
 
 # 第2章 React详解
 
