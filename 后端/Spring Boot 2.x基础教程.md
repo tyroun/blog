@@ -4,9 +4,9 @@ https://blog.didispace.com/spring-boot-learning-2x/
 
 # Spring Boot 2.x 基础教程
 
-# 1 环境搭建
+## 1 环境搭建
 
-## 1.1 典型package组织方式
+### 1.1 典型package组织方式
 
 ```
 com  
@@ -29,11 +29,11 @@ com
 - `com.example.myproject.service`包：用于编写业务逻辑相关的接口与实现
 - `com.example.myproject.web`：用于编写Web层相关的实现，比如：Spring MVC的Controller等 
 
-# 2 配置详解
+## 2 配置详解
 
-## 2.1 配置基础
+### 2.1 配置基础
 
-### 2.1.1 YAML
+#### 2.1.1 YAML
 
 默认配置文件位置为： `src/main/resources/application.properties`
 
@@ -77,7 +77,7 @@ server:
   port: 8883
 ```
 
-### 2.1.2 自定义参数@Value和参数引用
+#### 2.1.2 自定义参数@Value和参数引用
 
 YAML
 
@@ -106,7 +106,7 @@ public class Book {
 - 一种是我们上面介绍的PlaceHolder方式，格式为 `${...}`，大括号内为PlaceHolder
 - 另外还可以使用SpEL表达式（Spring Expression Language）， 格式为 `#{...}`，大括号内为SpEL表达式
 
-### 2.1.3 使用随机数
+#### 2.1.3 使用随机数
 
 ```yaml
 ${random.value}
@@ -114,13 +114,13 @@ ${random.int}
 ${random.long}
 ```
 
-### 2.1.4 命令行参数输入
+#### 2.1.4 命令行参数输入
 
 ```shell
 jave -jar xxx.jar --server.port=8888
 ```
 
-### 2.1.5 多环境配置
+#### 2.1.5 多环境配置
 
 在resource下创建多个文件，文件名格式为
 
@@ -128,9 +128,9 @@ jave -jar xxx.jar --server.port=8888
 
 在`application.properties`中通过`sprint.profiles.active`属性来设置不同的profile
 
-### 2.1.6 2.x新特性
+#### 2.1.6 2.x新特性
 
-#### 1 List类型
+##### 1 List类型
 
 一定要连续赋值
 
@@ -144,7 +144,7 @@ spring:
 		url: xxx, yyy
 ```
 
-#### 2 Map类型
+##### 2 Map类型
 
 ```yaml
 spring:
@@ -153,15 +153,15 @@ spring:
 		hello: world
 ```
 
-# 3 API开发
+## 3 API开发
 
-## 3.1 构建Restful API
+### 3.1 构建Restful API
 
 - `@Controller`：修饰class，用来创建处理http请求的对象
 - `@RestController`：Spring4之后加入的注解，原来在`@Controller`中返回json需要`@ResponseBody`来配合，如果直接用`@RestController`替代`@Controller`就不需要再配置`@ResponseBody`，默认返回json格式
 - `@RequestMapping`：配置url映射。现在更多的也会直接用以Http Method直接关联的映射注解来定义，比如：`GetMapping`、`PostMapping`、`DeleteMapping`、`PutMapping`等
 
-### 1 定义实体类
+#### 1 定义实体类
 
 ```java
 @Data
@@ -174,7 +174,7 @@ public class User {
 
 这里使用`@Data`注解可以实现在编译器自动添加set和get函数的效果。该注解是lombok提供的
 
-### 2 定义Controller
+#### 2 定义Controller
 
 ```java
 @RestController
@@ -252,9 +252,9 @@ public class UserController {
 }
 ```
 
-## 3.2 使用Swagger2构建文档
+### 3.2 使用Swagger2构建文档
 
-### 1 整合Swagger2
+#### 1 整合Swagger2
 
 在`pom.xml`中加入依赖
 
@@ -300,7 +300,7 @@ swagger:
 
 访问接口：http://localhost:8080/swagger-ui.html
 
-### 2 完善文档内容
+#### 2 完善文档内容
 
 我们通过`@Api`，`@ApiOperation`注解来给API增加说明、通过`@ApiImplicitParam`、`@ApiModel`、`@ApiModelProperty`注解来给参数增加说明
 
@@ -371,9 +371,9 @@ public class User {
 
 ![img](../image/Spring Boot 2.x基础教程/Fjc9yvgYhnQCrM9-2VaQiGwK0v6M.png)
 
-## 3.3 JSR-303实现请求参数校验
+### 3.3 JSR-303实现请求参数校验
 
-### 1 JSR-303标准
+#### 1 JSR-303标准
 
 JSR是Java Specification Requests的缩写，意思是Java 规范提案。是指向JCP(Java Community Process)提出新增一个标准化技术规范的正式请求。任何人都可以提交JSR，以向Java平台增添新的API和服务。JSR已成为Java界的一个重要标准
 
@@ -387,7 +387,7 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
 
 ![img](../image/Spring Boot 2.x基础教程/FnNRRGx1eWbniJFHQz2m-pUIEWKa.png)
 
-### 2 基本用法
+#### 2 基本用法
 
 1. 在要校验的字段上添加上`@NotNull`注解
 
@@ -430,7 +430,7 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
    - `message`：概要错误消息，返回内容中很容易可以知道，这里的错误原因是对user对象的校验失败，其中错误数量为`2`，而具体的错误信息就定义在上面的`errors`数组中
    - `path`：请求路径
 
-### 3 依赖库
+#### 3 依赖库
 
 ```xml
 <dependency>
@@ -452,11 +452,11 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
 
 
 
-# 4 数据库操作
+## 4 数据库操作
 
-## 4.1 使用JdbcTemplate访问MySQL数据库
+### 4.1 使用JdbcTemplate访问MySQL数据库
 
-### 1 数据源配置
+#### 1 数据源配置
 
 1. 为了连接数据库需要引入jdbc支持，在`pom.xml`中引入如下配置
 
@@ -497,9 +497,9 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
    ```
 
-### 2 使用JdbcTemplate
+#### 2 使用JdbcTemplate
 
-#### 1 领域对象
+##### 1 领域对象
 
 ```java
 @Data
@@ -514,7 +514,7 @@ public class User {
 
 使用了Lombok的`@Data`和`@NoArgsConstructor`注解来自动生成各参数的Set、Get函数以及不带参数的构造函数
 
-#### 2 编写Service interface
+##### 2 编写Service interface
 
 ```java
 public interface UserService {
@@ -537,7 +537,7 @@ public interface UserService {
 }
 ```
 
-#### 3 编写Service的实现，注入JdbcTemplate
+##### 3 编写Service的实现，注入JdbcTemplate
 
 Spring Boot下访问数据库的配置依然秉承了框架的初衷：简单。`不需要像Spring应用中创建JdbcTemplate的Bean`，就可以直接在自己的对象中注入使用
 
@@ -584,9 +584,9 @@ public class UserServiceImpl implements UserService {
 }
 ```
 
-## 4.2 使用MyBatis访问MySQL
+### 4.2 使用MyBatis访问MySQL
 
-### 1 整合MyBatis
+#### 1 整合MyBatis
 
 pom.xml
 
@@ -612,9 +612,9 @@ spring.datasource.password=
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 ```
 
-### 2 使用
+#### 2 使用
 
-#### 1 创建映射对象User
+##### 1 创建映射对象User
 
 ```java
 @Data
@@ -633,7 +633,7 @@ public class User {
 }
 ```
 
-#### 2 创建Mapper Interface
+##### 2 创建Mapper Interface
 
 ```java
 @Mapper
@@ -648,7 +648,7 @@ public interface UserMapper {
 }
 ```
 
-#### 3 创建Spring Boot 主类
+##### 3 创建Spring Boot 主类
 
 ```java
 @SpringBootApplication
@@ -661,7 +661,7 @@ public class Chapter35Application {
 }
 ```
 
-#### 4 单元测试
+##### 4 单元测试
 
 ```java
 @Slf4j
@@ -683,9 +683,9 @@ public class Chapter35ApplicationTests {
 }
 ```
 
-### 3 注解输入说明
+#### 3 注解输入说明
 
-#### 1 使用@Param
+##### 1 使用@Param
 
 ```java
 @Insert("INSERT INTO USER(NAME, AGE) VALUES(#{name}, #{age})")
@@ -694,7 +694,7 @@ int insert(@Param("name") String name, @Param("age") Integer age);
 
 `@Param`中定义的`name`对应了SQL中的`#{name}`，`age`对应了SQL中的`#{age}`
 
-#### 2 使用Map
+##### 2 使用Map
 
 ```java
 @Insert("INSERT INTO USER(NAME, AGE) VALUES(#{name,jdbcType=VARCHAR}, #{age,jdbcType=INTEGER})")
@@ -707,7 +707,7 @@ map.put("age", 40);
 userMapper.insertByMap(map);
 ```
 
-#### 3 使用对象
+##### 3 使用对象
 
 ```java
 @Insert("INSERT INTO USER(NAME, AGE) VALUES(#{name}, #{age})")
@@ -716,7 +716,7 @@ int insertByUser(User user);
 
 `#{name}`、`#{age}`就分别对应了User对象中的`name`和`age`属性
 
-#### 4 完整的增删改查
+##### 4 完整的增删改查
 
 ```java
 public interface UserMapper {
@@ -735,7 +735,7 @@ public interface UserMapper {
 }
 ```
 
-### 4 返回结果处理@Results
+#### 4 返回结果处理@Results
 
 ```java
 @Results({
@@ -748,9 +748,9 @@ List<User> findAll();
 
 `@Result`中的`property`属性对应User对象中的成员名，`column`对应SELECT出的字段名
 
-## 4.3 使用MyBatis的XML配置方式
+### 4.3 使用MyBatis的XML配置方式
 
-### 1 在应用主类中增加mapper的扫描包配置
+#### 1 在应用主类中增加mapper的扫描包配置
 
 ```java
 @MapperScan("com.didispace.chapter36.mapper")
@@ -764,7 +764,7 @@ public class Chapter36Application {
 }
 ```
 
-### 2 创建Map Interface
+#### 2 创建Map Interface
 
 ```java
 public interface UserMapper {
@@ -776,13 +776,13 @@ public interface UserMapper {
 }
 ```
 
-### 3 application.properties指定xml配置
+#### 3 application.properties指定xml配置
 
 ```properties
 mybatis.mapper-locations=classpath:mapper/*.xml
 ```
 
-###  4 创建xml文件
+####  4 创建xml文件
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -800,9 +800,9 @@ mybatis.mapper-locations=classpath:mapper/*.xml
 </mapper>
 ```
 
-## 4.4 Mabatis事务用法
+### 4.4 Mabatis事务用法
 
-### 1 @Options选项属性
+#### 1 @Options选项属性
 
 ```java
 @Options(useGeneratedKeys = true, keyProperty = "userId")  //获得主键返回值
@@ -839,7 +839,7 @@ keyProperty="userId"
 //(仅对 insert 有用)标记一个属性, MyBatis 会通过 getGeneratedKeys 或者通过 insert 语句的 selectKey 子元素设置它的值。默认: 不设置
 ```
 
-### 2 @MapperScan 和 @Mapper
+#### 2 @MapperScan 和 @Mapper
 
 在不使用@MapperScan前，我们需要直接在Mapper类上面添加注解@Mapper，这种方式要求每一个Mapper类都需要添加此注解，非常麻烦，属于重复劳动。通过使用@MapperScan注解，可以让我们不用为每个Mapper类都添加@Mapper注解。
 
@@ -858,7 +858,7 @@ public class SpringbootMybatisDemoApplication {
 
 另外，使用@MapperScan注解可以作用到多个包
 
-### 3 事务管理
+#### 3 事务管理
 
 添加mybatis-spring-boot-starter依赖时已经加入了事务处理的jar包：spring-tx.jar
 在入口处添加@EnableTransactionManagement注解开始事务控制
@@ -902,7 +902,7 @@ public class UserServiceimpl implements UserService {
 }
 ```
 
-#### @Transactional各个属性含义
+##### @Transactional各个属性含义
 
 propagation --事务传播行为
 含有以下值：
@@ -942,9 +942,9 @@ norollbackFor --指定特定异常实例，遇到时数据不会回滚
 
 norollbackForClassname--指定特定异常名，遇到时数据不会回滚
 
-# 5 Java开发神器Lombok的使用与原理
+## 5 Java开发神器Lombok的使用与原理
 
-## 1 Lombok的简介
+### 1 Lombok的简介
 
 Lombok是一款Java开发插件，使得Java开发者可以通过其定义的一些注解来消除业务工程中冗长和繁琐的代码，尤其对于简单的Java模型对象（POJO）。在开发环境中使用Lombok插件后，Java开发人员可以节省出重复构建，诸如hashCode和equals这样的方法以及各种业务对象模型的accessor和ToString等方法的大量时间。对于这些方法，它能够在编译源代码期间自动帮我们生成这些方法，并没有如反射那样降低程序的性能
 
@@ -960,7 +960,7 @@ pom.xml
 
 IDEA里需要在设置中启用Build->Compiler->annotation processors
 
-## 2 Lombok常用注解
+### 2 Lombok常用注解
 
 > [val](https://link.segmentfault.com/?enc=bJ8iO6y8pGrcSwIPiYk9Aw%3D%3D.TcrsCwjVrWFIRMG%2BLTOJgpBye5xhZocXcFMDlefn3%2BmDvZLPOLfIzQm2UKpMaKtZwPMJDtofDGdQx1opVoHiTw%3D%3D)
 

@@ -1,8 +1,10 @@
 {% raw %}
 
-# 1 Web开发基础
+# 廖雪峰Java教程
 
-## 1.1 Servlet
+## 1 Web开发基础
+
+### 1.1 Servlet
 
 Servlet是JavaEE定义的一套接口规范
 
@@ -42,13 +44,13 @@ public class HelloServlet extends HttpServlet {
 }
 ```
 
-## 1.2 MVC开发
+### 1.2 MVC开发
 
-### 1 先定义一些JavaBean的类
+#### 1 先定义一些JavaBean的类
 
 JavaBeam是一种实体类，类中只有私有成员变量，和外部读写的函数
 
-### 2 定义controller类
+#### 2 定义controller类
 
 该类的接口只需要返回Model和View给MVC框架即可
 
@@ -71,7 +73,7 @@ public class UserController {
 }
 ```
 
-### 3 设计MVC框架
+#### 3 设计MVC框架
 
 框架架构如下
 
@@ -101,15 +103,15 @@ render用于渲染，需要调用模板引擎ViewEngine。常用的有以下几�
 - [FreeMarker](https://freemarker.apache.org/)
 - [Velocity](https://velocity.apache.org/)
 
-# 2 Spring开发
+## 2 Spring开发
 
-## 2.1 IoC容器
+### 2.1 IoC容器
 
 Tomcat就是一个Servlet容器，它可以为Servlet的运行提供运行环境。类似Docker这样的软件也是一个容器，它提供了必要的Linux环境以便运行一个特定的Linux进程
 
 Spring的核心就是提供了一个IoC容器，它可以管理所有轻量级的JavaBean组件，提供的底层服务包括组件的生命周期管理、配置和组装服务、AOP支持，以及建立在AOP基础上的声明式事务服务等
 
-### 2.1.1 IoC原理
+#### 2.1.1 IoC原理
 
 IoC全称Inversion of Control，直译为控制反转，就是**依赖注入**
 
@@ -149,7 +151,7 @@ public class BookService {
 
 依赖注入可以通过设置属性注入，也可以直接在构造函数时初始化注入
 
-### 2.1.2 使用xml注入Bean
+#### 2.1.2 使用xml注入Bean
 
 ```java
 public class UserService {
@@ -202,7 +204,7 @@ UserService userService = context.getBean(UserService.class);
 User user = userService.login("bob@example.com", "password");
 ```
 
-### 2.1.3 使用注解注入
+#### 2.1.3 使用注解注入
 
 给`MailService`添加一个`@Component`注解：
 
@@ -243,9 +245,9 @@ public class AppConfig {
 }
 ```
 
-### 2.1.4 定制Bean注入
+#### 2.1.4 定制Bean注入
 
-#### Scope
+##### Scope
 
 对于Spring容器来说，当我们把一个Bean标记为`@Component`后，它就会自动为我们创建一个单例（Singleton）。如果想每次都返回一个新的实例，用Prototype
 
@@ -257,7 +259,7 @@ public class MailSession {
 }
 ```
 
-#### 注入List
+##### 注入List
 
 ```java
 //接口
@@ -298,7 +300,7 @@ public class Validators {
 }
 ```
 
-#### 可选注入
+##### 可选注入
 
 默认情况下，当我们标记了一个`@Autowired`后，Spring如果没有找到对应类型的Bean，它会抛出`NoSuchBeanDefinitionException`异常。
 
@@ -313,7 +315,7 @@ public class MailService {
 }
 ```
 
-#### 创建第三方Bean
+##### 创建第三方Bean
 
 如果一个Bean不在我们自己的package管理之内, 在`@Configuration`类中编写一个Java方法创建并返回它，注意给方法标记一个`@Bean`注解：
 
@@ -329,7 +331,7 @@ public class AppConfig {
 }
 ```
 
-#### 初始化和销毁
+##### 初始化和销毁
 
 有些时候，一个Bean在注入必要的依赖后，需要进行初始化（监听消息等）。在容器关闭时，有时候还需要清理资源（关闭连接池等）。我们通常会定义一个`init()`方法进行初始化，定义一个`shutdown()`方法进行清理
 
@@ -363,7 +365,7 @@ public class MailService {
 }
 ```
 
-#### 使用别名
+##### 使用别名
 
 一种类型的Bean创建多个实例
 
@@ -385,7 +387,7 @@ public class AppConfig {
 }
 ```
 
-#### 使用FactoryBean
+##### 使用FactoryBean
 
 用工厂模式创建Bean需要实现`FactoryBean`接口。我们观察下面的代码：
 
@@ -407,7 +409,7 @@ public class ZoneIdFactoryBean implements FactoryBean<ZoneId> {
 }
 ```
 
-### 2.1.5 使用Resource
+#### 2.1.5 使用Resource
 
 使用Spring容器时，我们可以把“文件”注入进来，方便程序读取
 
@@ -431,7 +433,7 @@ public class AppService {
 }
 ```
 
-### 2.1.6 配置文件注入
+#### 2.1.6 配置文件注入
 
 在开发应用程序时，经常需要读取配置文件。最常用的配置方法是以`key=value`的形式写在`.properties`文件中。
 
@@ -504,9 +506,9 @@ public class MailService {
 }
 ```
 
-### 2.1.7 条件注入
+#### 2.1.7 条件注入
 
-#### 使用profile
+##### 使用profile
 
 创建某个Bean时，Spring容器可以根据注解`@Profile`来决定是否创建。例如，以下配置：
 
@@ -548,7 +550,7 @@ ZoneId createZoneId() {
 }
 ```
 
-#### 使用Conditional
+##### 使用Conditional
 
 除了根据`@Profile`条件来决定是否创建某个Bean外，Spring还可以根据`@Conditional`决定是否创建某个Bean。
 
@@ -572,7 +574,7 @@ public class OnSmtpEnvCondition implements Condition {
 }
 ```
 
-## 2.2 使用AOP
+### 2.2 使用AOP
 
 AOP是Aspect Oriented Programming，即面向切面编程
 
@@ -586,7 +588,7 @@ AOP是Aspect Oriented Programming，即面向切面编程
 
 Spring的AOP实现就是基于JVM的动态代理
 
-### 2.2.1 使用AOP
+#### 2.2.1 使用AOP
 
 1. 通过Maven引入Spring对AOP的支持
 
@@ -633,7 +635,7 @@ Spring的AOP实现就是基于JVM的动态代理
    }
    ```
 
-#### 拦截器类型
+##### 拦截器类型
 
 顾名思义，拦截器有以下类型：
 
@@ -643,7 +645,7 @@ Spring的AOP实现就是基于JVM的动态代理
 - @AfterThrowing：和@After不同的是，只有当目标代码抛出了异常时，才执行拦截器代码；
 - @Around：能完全控制目标代码是否执行，并可以在执行前后、抛异常后执行任意拦截代码，可以说是包含了上面所有功能。
 
-### 2.2.2 使用注解装配AOP
+#### 2.2.2 使用注解装配AOP
 
 用AOP时，被装配的Bean最好自己能清清楚楚地知道自己被安排了
 
@@ -693,9 +695,9 @@ Spring的AOP实现就是基于JVM的动态代理
    }
    ```
 
-## 2.3 访问数据库
+### 2.3 访问数据库
 
-### 2.3.1 使用JDBC
+#### 2.3.1 使用JDBC
 
 Java程序使用JDBC接口访问关系数据库的时候，需要以下几步：
 
@@ -713,9 +715,9 @@ Java程序使用JDBC接口访问关系数据库的时候，需要以下几步：
 
 
 
-# 3 Maven基础
+## 3 Maven基础
 
-## 3.1 Maven介绍
+### 3.1 Maven介绍
 
 一个使用Maven管理的普通的Java项目，它的目录结构默认如下：
 
@@ -754,9 +756,9 @@ pom.xml
 </project>
 ```
 
-## 3.2 依赖管理
+### 3.2 依赖管理
 
-### 依赖关系
+#### 依赖关系
 
 Maven定义了几种依赖关系，分别是`compile`、`test`、`runtime`和`provided`：
 
@@ -782,7 +784,7 @@ Maven的中央仓库（[repo1.maven.org](https://repo1.maven.org/)）
 
 一个jar包一旦被下载过，就会被Maven自动缓存在本地目录（用户主目录的`.m2`目录）
 
-### Maven镜像
+#### Maven镜像
 
 除了可以从Maven的中央仓库下载外，还可以从Maven的镜像仓库下载
 
@@ -834,11 +836,11 @@ Maven的中央仓库（[repo1.maven.org](https://repo1.maven.org/)）
 </pluginRepositories>
 ```
 
-### 搜索第三方组件
+#### 搜索第三方组件
 
 如果我们要引用一个第三方组件，比如`okhttp`，如何确切地获得它的`groupId`、`artifactId`和`version`？方法是通过[search.maven.org](https://search.maven.org/)搜索关键字，找到对应的组件后，直接复制
 
-## 3.3 构建流程
+### 3.3 构建流程
 
 Maven有不同的lifecycle，每种lifecycle有不同的phase组成，每个phase又有不同的Goal
 
@@ -878,7 +880,7 @@ default lifecycle的phase如下
 
 `mvn clean package`：先清理，再执行到`package`。
 
-### Goal
+#### Goal
 
 执行一个phase又会触发一个或多个goal：
 

@@ -1,12 +1,14 @@
 {% raw %}
 
-# 3 从Flux到Redux
+# 深入浅出React和Redux
 
-## 3.1 Flux
+## 3 从Flux到Redux
+
+### 3.1 Flux
 
 Flux贯彻的最重要的观点——**单向数据流**
 
-### 3.1.1 MVC的缺陷
+#### 3.1.1 MVC的缺陷
 
 ![image-20211230181344644](../image/深入浅出React和Redux/image-20211230181344644.png)
 
@@ -18,9 +20,9 @@ FLUX架构
 
 所有的交互都是单向的。Action触发Dispatcher, Dispatcher分发Action给Store。Store来更新View，View上的点击再产生Action来触发Dispatcher
 
-### 3.1.2 Flux应用
+#### 3.1.2 Flux应用
 
-#### 1 Dispatcher
+##### 1 Dispatcher
 
 src/AppDispatcher.js
 
@@ -29,7 +31,7 @@ import {Dispatcher} from 'flux';
 export default new Dispatcher();
 ```
 
-#### 2 Action
+##### 2 Action
 
 src/ActionType.js
 
@@ -57,7 +59,7 @@ export const decrement = (conterCaption) =>{
 };
 ```
 
-#### 3 Store
+##### 3 Store
 
 需要2个store，一个存3个counter组件的数据，一个存3个counter组件的总和
 
@@ -134,7 +136,7 @@ SummaryStore.dispatchToken = AppDispatcher.register(
 
 Store上只是存储View获取数据的方法，还有Dispatcher如何更新数据的回调函数
 
-#### 4 View
+##### 4 View
 
 src/views/ControlPanel.js
 
@@ -194,13 +196,13 @@ class Counter extend React.Component {
 }
 ```
 
-### 3.1.3 Flux的好处
+#### 3.1.3 Flux的好处
 
 总的来说就是单向数据流，禁止了view层去修改model层的数据
 
-## 3.2 Redux
+### 3.2 Redux
 
-### 3.2.1 Redux的基本原则
+#### 3.2.1 Redux的基本原则
 
 Redux在Flux基础上强调三个基本原则：
 
@@ -219,9 +221,9 @@ Reducer表示一种函数类型，输入时上一次的state和这一次更新�
 Reducer(state,action)
 ```
 
-### 3.2.2 Redux实例
+#### 3.2.2 Redux实例
 
-#### 1 Action
+##### 1 Action
 
 1. ActionTypes.js 和 flux一样
 2. Actions.js 返回的是一个Action对象。flux是调用Dispatcher.dispatch()
@@ -240,7 +242,7 @@ export const increment = (counterCaption) => {
 
 因为Redux只有1个store，所以不需要Dispatcher分发action对象给多个store
 
-#### 2 Store
+##### 2 Store
 
 store.js
 
@@ -258,7 +260,7 @@ const store = createStore(reducer,initValues);
 export default store;
 ```
 
-#### 3 Reducer
+##### 3 Reducer
 
 reducer.js
 
@@ -281,7 +283,7 @@ export default (state,action) => {
 
 纯函数，不修改state状态。类似的代码Flux放在store中store.dispatchToken = AppDipatcher.register((action)=>{...})
 
-#### 4 View
+##### 4 View
 
 views/Counter.js
 
@@ -331,13 +333,13 @@ class Counter extends Component {
 }
 ```
 
-### 3.2.3 容器组件和傻瓜组件
+#### 3.2.3 容器组件和傻瓜组件
 
 容器组件 - 负责和Redux Store交互
 
 傻瓜(展示)组件 - 只单纯赋值渲染
 
-### 3.2.4 组件Context
+#### 3.2.4 组件Context
 
 因为一个应用只有一个Store，最好有个方法把Store传递个各个需要的子组件。而不是通过props一层层传递
 
@@ -402,14 +404,14 @@ CounterContainer.contextTypes = {
 export default CounterContainer;
 ```
 
-### 3.2.5 React-Redux
+#### 3.2.5 React-Redux
 
 主要提供1了两个功能
 
 1. connect：连接容器组件和傻瓜组件；
 2. Provider：提供包含store的context。
 
-#### connect
+##### connect
 
 ```js
 export default connnect(mapStateToProps, mapDispatchToProps)(Counter);
@@ -441,7 +443,7 @@ function mapDispatchToProps(dispatch,ownProps){
 }
 ```
 
-#### Provider
+##### Provider
 
 检查Store是否提供了3个函数
 
@@ -451,23 +453,23 @@ dispatch
 
 getState
 
-# 4 模块化React和Redux应用
+## 4 模块化React和Redux应用
 
-## 4.3 模块接口
+### 4.3 模块接口
 
 import整个目录，然后在目录中建立index.js，所有该目录下想要export的接口都只在在index.js中定义
 
-## 4.4 状态树设计
+### 4.4 状态树设计
 
 1. 一个模块控制一个状态节点
 2. 避免冗余数据
 3. 树形结构扁平。
 
-## 4.5 Todo应用实例
+### 4.5 Todo应用实例
 
 分todos和filter两个目录
 
-### 4.5.1 最外层代码
+#### 4.5.1 最外层代码
 
 index.js
 
@@ -495,7 +497,7 @@ function TodoApp() {
 export default TodoApp;
 ```
 
-### 4.5.2 action构造函数
+#### 4.5.2 action构造函数
 
 todo/actions.js
 
@@ -522,7 +524,7 @@ export const removeTodo = (id) => ({
 });
 ```
 
-### 4.5.3 组合reducer
+#### 4.5.3 组合reducer
 
 Store.js
 
@@ -584,9 +586,9 @@ export default (state = [], action) => {
 }
 ```
 
-### 4.5.4 Todo视图
+#### 4.5.4 Todo视图
 
-#### 1 todos视图
+##### 1 todos视图
 
 todos/views/todos.js
 
@@ -746,9 +748,9 @@ const TodoItem = ({onToggle, onRemove, completed, text}) => {
 
 
 
-# 5 React组件的性能优化
+## 5 React组件的性能优化
 
-## 5.1 单个组件的优化
+### 5.1 单个组件的优化
 
 以上组件如果有两个TodoItem，点击一个check的时候，会造成另一个组件重新渲染
 
@@ -800,9 +802,9 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
 });
 ```
 
-## 5.2 多个组件的优化
+### 5.2 多个组件的优化
 
-### 5.2.1 React的Reconciliation过程
+#### 5.2.1 React的Reconciliation过程
 
 React如何在virtual DOM 树中找到不同之处然后触发更新，这个过程叫做Reconciliation
 
@@ -818,7 +820,7 @@ React实际采用的算法需要的时间复杂度是O(N)
    5. componentDidUpdate
 4. 多个子组件，如果子组件顺序变化，会导致全部更新。需要key来保证不做无效更新
 
-### 5.2.2 Key的用法
+#### 5.2.2 Key的用法
 
 以下代码如果没有key值，就会需要全部更新
 
@@ -834,7 +836,7 @@ React实际采用的算法需要的时间复杂度是O(N)
 
 key和ref是React保留的两个特殊prop，并没有预期让组件直接访问
 
-## 5.3 用reselect提高数据获取性能
+### 5.3 用reselect提高数据获取性能
 
 
 
