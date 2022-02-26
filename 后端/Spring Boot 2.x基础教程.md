@@ -962,65 +962,593 @@ IDEA里需要在设置中启用Build->Compiler->annotation processors
 
 ### 2 Lombok常用注解
 
-> [val](https://link.segmentfault.com/?enc=bJ8iO6y8pGrcSwIPiYk9Aw%3D%3D.TcrsCwjVrWFIRMG%2BLTOJgpBye5xhZocXcFMDlefn3%2BmDvZLPOLfIzQm2UKpMaKtZwPMJDtofDGdQx1opVoHiTw%3D%3D)
+#### 1 Val 
 
-终于! 无忧无虑的 final 局部变量。
+可以将变量申明是final类型
 
-> [var](https://link.segmentfault.com/?enc=Js2CbhFUDU%2BF0b6s9k0NXQ%3D%3D.27RGlpIrBjGt4Vp4PqB4qeorqiZb4T3CJUuqMCW5l3HoPBP8thaS5OsOwrKZelSPP%2FFztzHJK87sWrrXV6G5oA%3D%3D)
+```java
+public   static void main(String[] args) {
 
-可变！类型可变的局部变量
+    val setVar = new HashSet<String>();
+    val listsVar = new   ArrayList<String>();
+    val mapVar = new HashMap<String,   String>();
 
-> [@NonNull](https://link.segmentfault.com/?enc=hGD%2BPtrFc%2FSirNfjCMqIIQ%3D%3D.BYhslFDzyVj2IsBTSKIGTSqPrwnpi3gQ4usDhzqTluO3zFOLp61ifYWZmoQ6CRJTzhlsJbG%2BTHxdttlNPpukzQ%3D%3D)
+    //=>上面代码相当于如下：
+    final Set<String> setVar2 = new   HashSet<>();
+    final List<String> listsVar2 = new   ArrayList<>();
+    final Map<String, String> maps2 =   new HashMap<>();
 
-我开始停止了焦虑，爱上了空指针
+}
+```
 
-> [@Getter/@Setter](https://link.segmentfault.com/?enc=6rlIvUhprLCafy2aGjGWgA%3D%3D.g0vdSfcRpOdVgUnRrCNwLsw9x1sOdyV9cUDAA5XGtrdOTvy8BGzCqUtUAZOakf3EsdSIdEtzJC2SrcuuNrgZEUAymD73NyQqDKAV0dR1%2FzI%3D)
+#### 2 @NonNull 
 
-再也不用写 `public int getFoo() {return foo;}`了。
+注解能够为方法或构造函数的参数提供非空检查
 
-> [ToString](https://link.segmentfault.com/?enc=doE8ts8dG0rJ8OT6aSgyng%3D%3D.ObyD42SEwl%2Fuz3z4paRp13mv%2BAx7qevCr8FdCH7xoPWcyNgKd5EYS1xCAyiV8dKsRoDBxiW7S6vpoMGJznwA1SOQTnSk3vaPzjZxrPe9rl4%3D)
+```java
+public void notNullExample(@NonNull String string) {
+    //方法内的代码
+}
 
-没必要启动debugger来查看你的字段：让 lombok来为你生成一个 `ToString` 方法吧！
+//=>上面代码相当于如下：
 
-> [@EqualsAndHashCode](https://link.segmentfault.com/?enc=l9T80uG5F2b1Lsg8ZQ9zXw%3D%3D.XQpsLbEnensrQLBVLOooHaqdKWgbaacc%2FoemK9m9fOA30%2FNWGJ3T13CA0EsqICx3CJ%2BXYD%2F6%2FUiTif29WflpHmVJxszy%2FXKAHLLC5qNTCpw%3D)
+public void notNullExample(String string) {
+    if (string != null) {
+        //方法内的代码相当于如下：
+    } else {
+        throw new NullPointerException("null");
+    }
+}
+```
 
-让相等变得简单: 从你对象的字段中生成 `hashCode` 和 `equals` 的实现
+#### 3 @Cleanup 
 
-> [@NoArgsConstructor, @RequiredArgsConstructor and @AllArgsConstructor](https://link.segmentfault.com/?enc=QPWnjJgW2mk6R%2Bi8oXV9dw%3D%3D.MQ%2FFy6pgUsaJLA7zT1I4M%2F7wc6KIPym5oQSK%2Fl0mPp1hmUbeghAZkENHus02MaMbNeFDjexjhAVPmehL5N44mbhS%2FDvkX0kzg4i6LlVDELbvqgaAjYHy%2BPs0I2cZoyW6%2F2uYtOtJsxIzeAo46Hd5URjWe6pAxmZLWyCpWTf8%2BPk%3D)
+能够自动释放资源
 
-按需生成构造函数: 生成不带参数的， 每个 final/non-null 字段一个参数的，一个字段一个参数的构造函数。
+```java
+public   void jedisExample(String[] args) {
+    try {
+        @Cleanup Jedis jedis =   redisService.getJedis();
+    } catch (Exception ex) {
+        logger.error(“Jedis异常:”,ex)
+    }
 
-> [@Data](https://link.segmentfault.com/?enc=B2Yq3Q%2B7XCC5Y3lnICYLiQ%3D%3D.hy9QvPc9vpokGvbCLgWp4QB53hNN6s4sCqMXu%2FEubuhMen%2BeuZTFPeheeLEQoc64zjkO%2BCDK3011lj025OoP4Q%3D%3D)
+    //=>上面代码相当于如下：
+    Jedis jedis= null;
+    try {
+        jedis = redisService.getJedis();
+    } catch (Exception e) {
+        logger.error(“Jedis异常:”,ex)
+    } finally {
+        if (jedis != null) {
+            try {
+                jedis.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
 
-所有的都合到一起：`@ToString`，`@ EqualsAndHashCode`，所有字段的 `@Getter`，所有非 final 字段的 `@Setter` 和 `@RequiredArgsConstructor` 的快捷方式！
+#### 4  @Getter/@Setter
 
-> [@Value](https://link.segmentfault.com/?enc=FQv4qigU%2BWuwwjc7ZcZCPA%3D%3D.sOkravBqSZ8Y2nbRynLk3mKDc6qZmeojNiN%2BHY0Jo98QG1LD%2BHiiSw2vjWI6n%2FdMrgK1mg7XI1UmzUCpV2w%2FnQ%3D%3D)
+可以针对类的属性字段自动生成Get/Set方法
 
-让不可变类变得非常容易。
+```java
+public class OrderCreateDemoReq{
 
-> [@Builder](https://link.segmentfault.com/?enc=kh772N1Fg3nFHSCx9od%2FFQ%3D%3D.4YtWPqSDab%2Fva7xPynVzaoFCR6fvLIPOJ41z8SfWHt1o8odtIFIyj190yC3fYpfY71d6Trbi1AN5RRZtDbLdRw%3D%3D)
+    @Getter
+    @Setter
+    private String customerId;
 
-... and Bob's your uncle: No-hassle fancy-pants APIs for object creation!
+    //其他代码……
+}
 
-> [@SneakyThrows](https://link.segmentfault.com/?enc=hy6L3ja62rHf9lendtyUag%3D%3D.q2TxMMddDoDGNcw7OaexrlHbAWxkcSyaSyla3nsqyetreCGn7yoncssBe1GQBavidGnIoegSui1u1TdbrwLaVO0lThsUx994xNkuet%2Feb4I%3D)
+//上面请求Req类的代码相当于如下：
 
-大胆抛出以前没有人抛出的已检查异常！
+public class OrderCreateDemoReq{
+    private String customerId;    
 
-> [@Synchronized](https://link.segmentfault.com/?enc=nWcUeO%2B9x6mwpoJR4nEOkQ%3D%3D.uiu%2BSkJ0ANIDiX35bDi9QOt%2BXhFF14uOxVCx94z%2BuEqUaJRTxDo4m93qVrqHsSIYRoxsZUEPbOjzWuR4cskmc7yZmQ%2FsVVNymFGebYa4dQg%3D)
+    public String getCustomerId(){
+         return customerId;
+    }
 
-`synchronized` 做了正确的事：不要暴露你的锁。
+    public void setCustomerId(String customerId){
+         this.customerId = customerId;
+    }
+}
+```
 
-> [@Getter(lazy=true)](https://link.segmentfault.com/?enc=8pL%2Bi0b%2FZ4GcI1YIUGau7g%3D%3D.l60S2ll0Y9pnLqvm0BDG5Ox0Uty6%2FXQlOkeOrbjolA1csh8gc92cg8FK735UyS3NHgCxAC%2FaP6YvzY0Nv4frtfxMXvzDM5%2BlmspUp2bm3PE%3D))
+#### 5  @ToString 
 
-惰性加载是一种美德!
+为使用该注解的类生成一个toString方法，默认的toString格式为：ClassName(fieldName= fieleValue ,fieldName1=fieleValue)
 
-> [@Log](https://link.segmentfault.com/?enc=Zylzigt2hnh0oD2Q1Z5oEg%3D%3D.nIvexjxciKxGB%2Fk676zKb5E0tDs2bcaNWEHPlkfPO%2F0F1Hm4xO7aaX1K1xrBr8rX9VnfSemegYWfYYwmrsaN2DMHNXs97SIi1FHpPll8drk%3D))
+```java
+@ToString(callSuper=true,exclude="someExcludedField")
+public   class Demo extends Bar {
+    private boolean someBoolean = true;
+    private String someStringField;
+    private float someExcludedField;
+}
 
-Captain's Log, stardate 24435.7: "What was that line again?"
+//上面代码相当于如下：
+public   class Demo extends Bar {
+    private boolean someBoolean = true;
+    private String someStringField;
+    private float someExcludedField;
+   
+    @ Override
+    public String toString() {
+        return "Foo(super=" +   super.toString() +
+            ", someBoolean=" +   someBoolean +
+            ", someStringField=" +   someStringField + ")";
+    }
+}
+```
 
-> [experimental](https://link.segmentfault.com/?enc=PEzfOhSLoJbAz%2BYzWIpXQg%3D%3D.t9xhc4HyU9TeqHOFYBckYAh%2FoDfYIjoEiffUeA6qH98L4fQdsjDshpzntfSzdf0drjKK856TLurRSgP5P6S2yA%3D%3D)
+#### 6 @EqualsAndHashCode
 
-Head to the lab: The new stuff we're working on.
+为使用该注解的类自动生成equals和hashCode方法
+
+```java
+@EqualsAndHashCode(exclude = {"id"}, callSuper =true)
+public class LombokDemo extends Demo{
+    private int id;
+    private String name;
+    private String gender;
+}
+
+//上面代码相当于如下：
+public class LombokDemo extends Demo{
+
+    private int id;
+    private String name;
+    private String gender;
+    
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (o == null) return false;
+        if (o.getClass() != this.getClass()) return false;
+        if (!super.equals(o)) return false;
+        final LombokDemo other = (LombokDemo)o;
+        if (this.name == null ? other.name != null : !this.name.equals(other.name)) return false;
+        if (this.gender == null ? other.gender != null : !this.gender.equals(other.gender)) return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int PRIME = 31;
+        int result = 1;
+        result = result * PRIME + super.hashCode();
+        result = result * PRIME + (this.name == null ? 0 : this.name.hashCode());
+        result = result * PRIME + (this.gender == null ? 0 : this.gender.hashCode());
+        return result;
+    }
+
+}
+```
+
+#### 7 @NoArgsConstructor/@RequiredArgsConstructor/@AllArgsConstructor
+
+这几个注解分别为类自动生成了无参构造器、指定参数的构造器和包含所有参数的构造器
+
+```java
+@RequiredArgsConstructor(staticName = "of") 
+@AllArgsConstructor(access = AccessLevel.PROTECTED) 
+public class ConstructorExample<T> { 
+
+  private int x, y; 
+  @NonNull private T description; 
+  
+  @NoArgsConstructor 
+  public static class NoArgsExample { 
+    @NonNull private String field; 
+  } 
+
+}
+
+//上面代码相当于如下：
+@RequiredArgsConstructor(staticName = "of") 
+@AllArgsConstructor(access = AccessLevel.PROTECTED) 
+public class ConstructorExample<T> { 
+
+  private int x, y; 
+  @NonNull private T description; 
+
+  @NoArgsConstructor 
+  public static class NoArgsExample { 
+    @NonNull private String field; 
+  } 
+
+}
+
+public class ConstructorExample<T> { 
+  private int x, y; 
+  @NonNull private T description; 
+
+  private ConstructorExample(T description) { 
+    if (description == null) throw new NullPointerException("description"); 
+    this.description = description; 
+  } 
+
+  public static <T> ConstructorExample<T> of(T description) { 
+    return new ConstructorExample<T>(description); 
+  } 
+
+  @java.beans.ConstructorProperties({"x", "y", "description"}) 
+  protected ConstructorExample(int x, int y, T description) { 
+    if (description == null) throw new NullPointerException("description"); 
+    this.x = x; 
+    this.y = y; 
+    this.description = description; 
+  } 
+  
+  public static class NoArgsExample { 
+    @NonNull private String field;
+    
+    public NoArgsExample() { 
+    } 
+  } 
+}
+```
+
+#### 8 @Data
+
+注解作用比较全，其包含注解的集合`@ToString`，`@EqualsAndHashCode`，所有字段的`@Getter`和所有非final字段的`@Setter`, `@RequiredArgsConstructor`
+
+#### 9 @Builder
+
+提供了一种比较推崇的构建值对象的方式
+
+```java
+@Data
+@Builder(toBuilder = true)
+public class Room {
+    @NonNull
+    private String id;
+    private String name;
+    private boolean active;
+    private Date createTime;
+    @Singular
+    private Set<String> occupations;
+
+    public static void main(String[] args) {
+        Room room = Room.builder().active(true)
+                .name("name")
+                .id("id")
+                .createTime(new Date())
+                .occupation("1")	//@Singular可以用于并排添加成员
+                .occupation("2")
+                .build();
+
+        Assert.assertEquals(2, room.getOccupations().size());
+
+    }
+}
+```
+
+#### 10 @Synchronized
+
+类似Java中的Synchronized 关键字，但是可以隐藏同步锁
+
+````java
+public class SynchronizedExample { 
+
+ private final Object readLock = new   Object(); 
+
+ @Synchronized 
+ public static void hello() { 
+     System.out.println("world");   
+ } 
+
+ @Synchronized("readLock") 
+ public void foo() { 
+   System.out.println("bar"); 
+ } 
+
+//上面代码相当于如下：
+
+ public class SynchronizedExample { 
+
+  private static final Object $LOCK = new   Object[0]; 
+  private final Object readLock = new   Object(); 
+
+  public static void hello() { 
+    synchronized($LOCK) { 
+      System.out.println("world"); 
+    } 
+  }   
+
+  public void foo() { 
+    synchronized(readLock) { 
+        System.out.println("bar");   
+    } 
+  } 
+
+}
+````
+
+## 6 日志管理
+
+### 6.1 使用Slf4j
+
+英文全称：Simple Logging Facade for Java，即：简单日志门面，它并不是一个具体的日志解决方案，实际工作的还是Logback或Log4j这样的日志框架
+
+```java
+@Slf4j
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+
+        log.error("Hello World");
+        log.warn("Hello World");
+        log.info("Hello World");
+        log.debug("Hello World");
+        log.trace("Hello World");
+    }
+
+}
+```
+
+这里我们通过在`pom.xml`中引入了Lombok，然后使用`@Slf4j`声明引入Slf4j的`log`日志记录对象。而这个日志具体是如何写到控制台或者文件的，则有Spring Boot项目中引入了什么具体的日志框架决定，默认情况下就是Logback
+
+### 6.2 日志显示
+
+启动任意一个Spring Boot项目，我们都可以在控制台看到很多日志信息，比如下面这样的一条日志：
+
+[![img](../image/Spring Boot 2.x基础教程/pasted-817.png)](https://blog.didispace.com/images/pasted-817.png)
+
+日志的输出内容中一共有7种元素，具体如下：
+
+1. 时间日期：精确到毫秒
+2. 日志级别：ERROR, WARN, INFO, DEBUG or TRACE
+3. 进程ID
+4. 分隔符：`---` 标识实际日志的开始
+5. 线程名：方括号括起来（可能会截断控制台输出）
+6. Logger名：通常使用源代码的类名
+7. 日志内容
+
+### 6.3 日志输出
+
+在Spring Boot应用中，日志会默认会输出到控制台中，默认的输出日志级别包含：`ERROR`、`WARN`和`INFO`
+
+我们可以通过两种方式切换至`DEBUG`级别：
+
+**第一种**：在运行命令后加入`--debug`标志，如：`$ java -jar myapp.jar --debug`
+
+**第二种**：在配置文件`application.properties`中配置`debug=true`
+
+### 6.4 日志配置
+
+#### 1 多彩输出
+
+通过在`application.properties`中设置`spring.output.ansi.enabled`参数来支持，该参数有三个选项：
+
+- NEVER：禁用ANSI-colored输出
+- DETECT：会检查终端是否支持ANSI，是的话就采用彩色输出（默认项）
+- ALWAYS：总是使用ANSI-colored格式输出，若终端不支持的时候，会有很多干扰信息，不推荐使用
+
+#### 2 文件输出
+
+若要增加文件输出，需要在配置文件`application.properties`配置几个参数，比如这样：
+
+```properties
+logging.file.name=run.log
+logging.file.path=./
+```
+
+- `logging.file.name`：设置文件名
+- `logging.file.path`：设置文件路径
+
+#### 3 文件滚动
+
+一直把日志输出在一个文件里显然是不合适的，任何一个日志框架都会为此准备日志文件的滚动配置。由于本篇将默认配置，所以就是Logback的配置，具体有这几个：
+
+- `logging.logback.rollingpolicy.file-name-pattern`：用于创建日志档案的文件名模式。
+- `logging.logback.rollingpolicy.clean-history-on-start`：应用程序启动时是否对进行日志归档清理，默认为false，不清理
+- `logging.logback.rollingpolicy.max-history`：要保留的最大归档日志文件数量，默认为7个
+- `logging.logback.rollingpolicy.max-file-size`：归档前日志文件的最大尺寸，默认为10MB
+- `logging.logback.rollingpolicy.total-size-cap`：日志档案在被删除前的最大容量，默认为0B
+
+#### 4 级别控制
+
+如果要对各个Logger做一些简单的输出级别控制，那么只需要在`application.properties`中进行配置就能完成。
+
+配置格式：`logging.level.*=LEVEL`
+
+- `logging.level`：日志级别控制前缀，`*`为包名或Logger名
+- `LEVEL`：选项TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
+
+### 6.5 使用Log4j2
+
+#### 1 pom.xml
+
+在`pom.xml`中引入Log4j2的Starter依赖`spring-boot-starter-log4j2`，同时排除默认引入的`spring-boot-starter-logging`
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-log4j2</artifactId>
+</dependency>
+```
+
+#### 2 application.properties
+
+通过`logging.config`配置指定log4j2的配置文件位置
+
+```properties
+logging.config=classpath:log4j2.xml
+```
+
+#### 3 resource下新建log4j2.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
+```
+
+## 7 使用LDAP
+
+### 7.1 LDAP简介
+
+LDAP - entry - DN(key)
+
+​					- 其他属性(type): value
+
+LDAP的信息是以树型结构存储的，在树根一般定义国家(c=CN)或域名(dc=com)，在其下则往往定义一个或多个组织 (organization)(o=Acme)或组织单元(organizational units) (ou=People)
+
+**LDAP简称对应**
+
+- o：organization（组织-公司）
+- ou：organization unit（组织单元-部门）
+- c：countryName（国家）
+- dc：domainComponent（域名）
+- sn：surname（姓氏）
+- cn：common name（常用名称）
+
+### 7.2 入门示例
+
+pom.xml
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-ldap</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>com.unboundid</groupId>
+    <artifactId>unboundid-ldapsdk</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+`spring-boot-starter-data-ldap`是Spring Boot封装的对LDAP自动化配置的实现，它是基于spring-data-ldap来对LDAP服务端进行具体操作的。
+
+而`unboundid-ldapsdk`主要是为了在这里使用嵌入式的LDAP服务端来进行测试操作
+
+src/test/resources/ldap-server.ldif
+
+```ldif
+dn: dc=didispace,dc=com
+objectClass: top
+objectClass: domain
+objectclass: extensibleObject
+dc: didispace
+
+dn: ou=people,dc=didispace,dc=com
+objectclass: top
+objectclass: organizationalUnit
+ou: people
+
+dn: uid=ben,ou=people,dc=didispace,dc=com
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: didi
+sn: zhaiyongchao
+uid: didi
+userPassword: {SHA}nFCebWjxfaLbHHG1Qk5UU4trbvQ=
+```
+
+`application.properties`中添加嵌入式LDAP的配置
+
+```properties
+spring.ldap.embedded.ldif=classpath:ldap-server.ldif
+spring.ldap.embedded.base-dn=dc=didispace,dc=com
+```
+
+使用spring-data-ldap的基础用法，定义LDAP中属性与我们Java中定义实体的关系映射以及对应的Repository
+
+```java
+@Data
+@Entry(base = "ou=people,dc=didispace,dc=com", objectClasses = "inetOrgPerson")
+public class Person {
+
+    @Id
+    private Name id;
+    @DnAttribute(value = "uid", index = 3)
+    private String uid;
+    @Attribute(name = "cn")
+    private String commonName;
+    @Attribute(name = "sn")
+    private String userName;
+    private String userPassword;
+
+}
+
+public interface PersonRepository extends CrudRepository<Person, Name> {
+	
+}
+```
+
+使用
+
+```java
+@Slf4j
+@SpringBootTest
+public class ApplicationTests {
+    @Autowired
+    private PersonRepository personRepository;
+
+    @Test
+    public void findAll() {
+        personRepository.findAll().forEach(p -> {
+            System.out.println(p);
+        });
+
+    }
+}
+```
+
+其他使用
+
+```java
+Person person = new Person();
+person.setUid("uid:1");
+person.setSuerName("AAA");
+person.setCommonName("aaa");
+person.setUserPassword("123456");
+personRepository.save(person);
+```
+
+连接LDAP服务器
+
+```properties
+spring.ldap.urls=ldap://localhost:1235
+spring.ldap.base=dc=didispace,dc=com
+spring.ldap.username=didispace
+spring.ldap.password=123456
+```
+
+
 
 
 
