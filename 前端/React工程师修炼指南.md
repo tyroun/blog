@@ -1219,6 +1219,35 @@ function Course(){
 }
 ```
 
+#### 4 useMemo/useCallback
+
+都是有值变化的时候调用
+
+```javascript
+const renderButton = useCallback(
+     () => (
+         <Button type="link">
+            {buttonText}
+         </Button>
+     ),
+     [buttonText]    // 当buttonText改变时才重新渲染renderButton
+);
+```
+
+useMemo返回的的是一个值，用于避免在每次渲染时都进行高开销的计算
+
+```javascript
+// 仅当num改变时才重新计算结果
+const result = useMemo(() => {
+    for (let i = 0; i < 100000; i++) {
+      (num * Math.pow(2, 15)) / 9;
+    }
+    return i;
+}, [num]);
+```
+
+
+
 ### 2.13.2 Hook使用规则
 
 1. 只能在函数式组件和自定义Hooks之中调用Hooks，普通函数或者类组件中不能使用Hooks。

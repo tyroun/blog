@@ -409,6 +409,8 @@ public class ZoneIdFactoryBean implements FactoryBean<ZoneId> {
 }
 ```
 
+当一个Bean实现了`FactoryBean`接口后，Spring会先实例化这个工厂，然后调用`getObject()`创建真正的Bean。`getObjectType()`可以指定创建的Bean的类型，因为指定类型不一定与实际类型一致，可以是接口或抽象类
+
 #### 2.1.5 使用Resource
 
 使用Spring容器时，我们可以把“文件”注入进来，方便程序读取
@@ -709,7 +711,711 @@ Java程序使用JDBC接口访问关系数据库的时候，需要以下几步：
 
 正确编写JDBC代码的关键是使用`try ... finally`释放资源，涉及到事务的代码需要正确提交或回滚事务。
 
+***使用步骤***
 
+1. 创建并管理DataSource
+2. 实例化JdbcTemplate
+
+```java
+@Configuration
+@ComponentScan
+//通过@PropertySource("jdbc.properties")读取数据库配置文件
+@PropertySource("jdbc.properties") 
+public class AppConfig {
+
+    //通过@Value("${jdbc.url}")注入配置文件的相关配置；
+    @Value("${jdbc.url}")
+    String jdbcUrl;
+
+    @Value("${jdbc.username}")
+    String jdbcUsername;
+
+    @Value("${jdbc.password}")
+    String jdbcPassword;
+
+    //创建一个DataSource实例，它的实际类型是HikariDataSource，
+    //创建时需要用到注入的配置
+    @Bean
+    DataSource createDataSource() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(jdbcUsername);
+        config.setPassword(jdbcPassword);
+        config.addDataSourceProperty("autoCommit", "true");
+        config.addDataSourceProperty("connectionTimeout", "5");
+        config.addDataSourceProperty("idleTimeout", "60");
+        return new HikariDataSource(config);
+    }
+
+    //创建一个JdbcTemplate实例，它需要注入DataSource，这是通过方法参数完成注入的
+    @Bean
+    JdbcTemplate createJdbcTemplate(@Autowired DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+}
+```
+
+3. 初始化表
+
+```java
+@Component
+public class DatabaseInitializer {
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @PostConstruct
+    public void init() {
+        //在jdbcTemplate里加入SQL
+        jdbcTemplate.update("CREATE TABLE IF NOT EXISTS users (" //
+                + "id BIGINT IDENTITY NOT NULL PRIMARY KEY, " //
+                + "email VARCHAR(100) NOT NULL, " //
+                + "password VARCHAR(100) NOT NULL, " //
+                + "name VARCHAR(100) NOT NULL, " //
+                + "UNIQUE (email))");
+    }
+}
+```
+
+4. JBDCTemplate在Service中使用
+
+`用法1` T execute(ConnectionCallback<T> action)方法 
+
+提供了Jdbc的Connection供我们使用
+
+```java
+@Component
+public class UserService {
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+        
+    public User getUserById(long id) {
+        // 注意传入的是ConnectionCallback:
+        return jdbcTemplate.execute((Connection conn) -> {
+            // 可以直接使用conn实例，不要释放它，回调结束后JdbcTemplate自动释放:
+            // 在内部手动创建的PreparedStatement、ResultSet必须用try(...)释放:
+            try (var ps = conn.prepareStatement("SELECT * FROM users WHERE id = ?")) {
+                ps.setObject(1, id);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return new User( // new User object:
+                                rs.getLong("id"), // id
+                                rs.getString("email"), // email
+                                rs.getString("password"), // password
+                                rs.getString("name")); // name
+                    }
+                    throw new RuntimeException("user not found by id.");
+                }
+            }
+        });
+    }
+    
+}
+```
+
+`用法2` T execute(String sql, PreparedStatementCallback<T> action)
+
+```java
+public User getUserByName(String name) {
+    // 需要传入SQL语句，以及PreparedStatementCallback:
+    return jdbcTemplate.execute("SELECT * FROM users WHERE name = ?", (PreparedStatement ps) -> {
+        // PreparedStatement实例已经由JdbcTemplate创建，并在回调后自动释放:
+        ps.setObject(1, name);
+        try (var rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return new User( // new User object:
+                        rs.getLong("id"), // id
+                        rs.getString("email"), // email
+                        rs.getString("password"), // password
+                        rs.getString("name")); // name
+            }
+            throw new RuntimeException("user not found by id.");
+        }
+    });
+}
+```
+
+`用法3`  
+
+T queryForObject(String sql, Object[] args, RowMapper<T> rowMapper)方法
+
+```java
+public User getUserByEmail(String email) {
+    // 传入SQL，参数和RowMapper实例:
+    return jdbcTemplate.queryForObject("SELECT * FROM users WHERE email = ?", new Object[] { email },
+            (ResultSet rs, int rowNum) -> {
+                // 将ResultSet的当前行映射为一个JavaBean:
+                return new User( // new User object:
+                        rs.getLong("id"), // id
+                        rs.getString("email"), // email
+                        rs.getString("password"), // password
+                        rs.getString("name")); // name
+            });
+}
+```
+
+rowMapper是个匿名函数，queryForObject()会自动生成ps，并调用ps.excute执行sql语句，执行完以后返回rs和rowNum作为输入，调用rowMapper这个匿名函数
+
+Spring也提供了BeanPropertyRowMapper这样的函数，可以直接按列名把record转成JavaBean
+
+#### 2.3.2 使用声明式事务
+
+手写事务代码，使用`try...catch`如下
+
+```java
+TransactionStatus tx = null;
+try {
+    // 开启事务:
+    tx = txManager.getTransaction(new DefaultTransactionDefinition());
+    // 相关JDBC操作:
+    jdbcTemplate.update("...");
+    jdbcTemplate.update("...");
+    // 提交事务:
+    txManager.commit(tx);
+} catch (RuntimeException e) {
+    // 回滚事务:
+    txManager.rollback(tx);
+    throw e;
+}
+```
+
+##### 使用方法
+
+如果要在Spring中操作事务，没必要手写JDBC事务，可以使用Spring提供的高级接口来操作事务。Spring提供了一个`PlatformTransactionManager`来表示事务管理器，所有的事务都由它负责管理。而事务由`TransactionStatus`表示。
+
+Spring同时支持JDBC和分布式事务JTA(Java Transaction API)两种事务模型
+
+可以在Config里面定义Bean
+
+```java
+@Configuration
+@ComponentScan
+@PropertySource("jdbc.properties")
+public class AppConfig {
+    ...
+    @Bean
+    PlatformTransactionManager createTxManager(@Autowired DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+}
+```
+
+也可以用注解
+
+```java
+@Configuration
+@ComponentScan
+@EnableTransactionManagement // 启用声明式
+@PropertySource("jdbc.properties")
+public class AppConfig {
+    ...
+}
+```
+
+对需要事务支持的方法，加一个`@Transactional`注解
+
+```java
+@Component
+public class UserService {
+    // 此public方法自动具有事务支持:
+    @Transactional
+    public User register(String email, String password, String name) {
+       ...
+    }
+}
+
+//或者直接在Bean的class处加上，表示所有public方法都具有事务支持
+@Component
+@Transactional
+public class UserService {
+    ...
+}
+
+
+```
+
+##### 回滚事务
+
+在一个事务方法中，如果程序判断需要回滚事务，只需抛出`RuntimeException`
+
+```java
+@Transactional(rollbackFor = {RuntimeException.class, IOException.class})
+public buyProducts(long productId, int num) {
+    ...
+    if (store < num) {
+        // 库存不够，购买失败:
+        throw new IllegalArgumentException("No enough products");
+    }
+    ...
+}
+```
+
+##### 事务边界和事务传播
+
+简单情况，以函数定义为边界
+
+```java
+@Component
+public class UserService {
+    @Transactional
+    public User register(String email, String password, String name) { // 事务开始
+       ...
+    } // 事务结束
+}
+
+@Component
+public class BonusService {
+    @Transactional
+    public void addBonus(long userId, int bonus) { // 事务开始
+       ...
+    } // 事务结束
+}
+```
+
+如果事务嵌套调用的情况
+
+```java
+@Component
+public class UserService {
+    @Autowired
+    BonusService bonusService;
+
+    @Transactional
+    public User register(String email, String password, String name) {
+        // 插入用户记录:
+        User user = jdbcTemplate.insert("...");
+        // 增加100积分:
+        bonusService.addBonus(user.id, 100); //里面还有一个事务
+    }
+}
+```
+
+以上情况有好几种策略，成为***事务传播级别***
+
+默认是`REQUIRED` ： 表示多个事务合成1个事务
+
+`SUPPORTS`：表示如果有事务，就加入到当前事务，如果没有，那也不开启事务执行。这种传播级别可用于查询方法，因为SELECT语句既可以在事务内执行，也可以不需要事务；
+
+`MANDATORY`：表示必须要存在当前事务并加入执行，否则将抛出异常。这种传播级别可用于核心更新逻辑，比如用户余额变更，它总是被其他事务方法调用，不能直接由非事务方法调用；
+
+`REQUIRES_NEW`：表示不管当前有没有事务，都必须开启一个新的事务执行。如果当前已经有事务，那么当前事务会挂起，等新事务完成后，再恢复执行；
+
+`NOT_SUPPORTED`：表示不支持事务，如果当前有事务，那么当前事务会挂起，等这个方法执行完成后，再恢复执行；
+
+`NEVER`：和`NOT_SUPPORTED`相比，它不但不支持事务，而且在监测到当前有事务时，会抛出异常拒绝执行；
+
+`NESTED`：表示如果当前有事务，则开启一个嵌套级别事务，如果当前没有事务，则开启一个新事务。
+
+在注解里定义事务传播级别
+
+```java
+@Transactional(propagation = Propagation.REQUIRES_NEW)
+public Product createProduct() {
+    ...
+}
+```
+
+#### 2.3.2 使用DAO
+
+Controller -> Service   Service -> Dao
+
+写数据访问层的时候，可以使用DAO模式。DAO即Data Access Object的缩写
+
+```java
+public class UserDao {
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    User getById(long id) {
+        ...
+    }
+
+    List<User> getUsers(int page) {
+        ...
+    }
+
+    User createUser(User user) {
+        ...
+    }
+
+    User updateUser(User user) {
+        ...
+    }
+
+    void deleteUser(User user) {
+        ...
+    }
+}
+```
+
+是否使用DAO，根据实际情况决定，因为很多时候，直接在Service层操作数据库也是完全没有问题的
+
+#### 2.3.4 集成Hibernate
+
+在jdbcTemplate种，用RowMapper函数把ResultSet转成Java Bean
+
+这种把关系数据库的表记录映射为Java对象的过程就是ORM：Object-Relational Mapping。ORM既可以把记录转换成Java对象，也可以把Java对象转换为行记录
+
+Hibernate作为ORM框架，它可以替代`JdbcTemplate`，但Hibernate仍然需要JDBC驱动，所以，我们需要引入JDBC驱动、连接池，以及Hibernate本身
+
+##### 配置
+
+```java
+@Configuration
+@ComponentScan
+@EnableTransactionManagement
+@PropertySource("jdbc.properties")
+public class AppConfig {
+    @Bean
+    DataSource createDataSource() {
+        ...
+    }
+    
+    //用了上面注入的DataSource,创建一个LocalSessionFactoryBean
+     @Bean
+    LocalSessionFactoryBean createSessionFactory(@Autowired DataSource dataSource) {
+        var props = new Properties();
+        props.setProperty("hibernate.hbm2ddl.auto", "update"); // 生产环境不要使用
+        props.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
+        props.setProperty("hibernate.show_sql", "true");
+        var sessionFactoryBean = new LocalSessionFactoryBean();
+        sessionFactoryBean.setDataSource(dataSource);
+        // 扫描指定的package获取所有entity class:
+        sessionFactoryBean.setPackagesToScan("com.itranswarp.learnjava.entity");
+        sessionFactoryBean.setHibernateProperties(props);
+        return sessionFactoryBean;
+    }
+    
+    //创建Template和TransactionManager
+     @Bean
+    HibernateTemplate createHibernateTemplate(@Autowired SessionFactory sessionFactory) {
+        return new HibernateTemplate(sessionFactory);
+    }
+
+    @Bean
+    PlatformTransactionManager createTxManager(@Autowired SessionFactory sessionFactory) {
+        return new HibernateTransactionManager(sessionFactory);
+    }
+}
+```
+
+`LocalSessionFactoryBean`是一个`FactoryBean`，它会再自动创建一个`SessionFactory`
+
+在Hibernate中，`Session`是封装了一个JDBC `Connection`的实例，而`SessionFactory`是封装了JDBC `DataSource`的实例，即`SessionFactory`持有连接池，每次需要操作数据库的时候，`SessionFactory`创建一个新的`Session`，相当于从连接池获取到一个新的`Connection`。`SessionFactory`就是Hibernate提供的最核心的一个对象，但`LocalSessionFactoryBean`是Spring提供的为了让我们方便创建`SessionFactory`的类
+
+##### 用注解定义Entity
+
+```java
+@Entity
+@Table(name="users)
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false, updatable = false)
+    public Long getId() { ... }
+
+    @Column(nullable = false, unique = true, length = 100)
+    public String getEmail() { ... }
+
+    @Column(nullable = false, length = 100)
+    public String getPassword() { ... }
+
+    @Column(nullable = false, length = 100)
+    public String getName() { ... }
+
+    @Column(nullable = false, updatable = false)
+    public Long getCreatedAt() { ... }
+}
+```
+
+ 使用Hibernate时，不要使用基本类型的属性，总是使用包装类型，如Long或Integer。
+
+可以把不同的entity中相同的属性抽象出来
+
+```java
+@MappedSuperclass //这个注解表示用于继承
+public abstract class AbstractEntity {
+
+    private Long id;
+    private Long createdAt;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false, updatable = false)
+    public Long getId() { ... }
+
+    @Column(nullable = false, updatable = false)
+    public Long getCreatedAt() { ... }
+
+    @Transient //表示不是查表得到的属性
+    public ZonedDateTime getCreatedDateTime() {
+        return Instant.ofEpochMilli(this.createdAt).atZone(ZoneId.systemDefault());
+    }
+
+    @PrePersist //insert之前会执行该操作
+    public void preInsert() {
+        setCreatedAt(System.currentTimeMillis());
+    }
+}
+```
+
+注意到使用的所有注解均来自`javax.persistence`，它是JPA规范的一部分
+
+##### 表的增删改操作
+
+```java
+@Component
+@Transactional
+public class UserService {
+    @Autowired
+    HibernateTemplate hibernateTemplate;
+    
+    //Insert操作
+    public User register(String email, String password, String name) {
+        // 创建一个User对象:
+        User user = new User();
+        // 设置好各个属性:
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setName(name);
+        // 不要设置id，因为使用了自增主键
+        // 保存到数据库:
+        hibernateTemplate.save(user);
+        // 现在已经自动获得了id:
+        System.out.println(user.getId());
+        return user;
+    }
+    
+    //Delete操作
+    public boolean deleteUser(Long id) {
+        User user = hibernateTemplate.get(User.class, id);
+        if (user != null) {
+            hibernateTemplate.delete(user);
+            return true;
+        }
+        return false;
+    }
+    
+    //Update操作
+    public void updateUser(Long id, String name) {
+        User user = hibernateTemplate.load(User.class, id);
+        user.setName(name);
+        hibernateTemplate.update(user);
+    }
+    
+}
+```
+
+##### 表的查询
+
+`方法1`使用Example
+
+使用`findByExample()`，给出一个`User`实例，Hibernate把该实例所有非`null`的属性拼成`WHERE`条件
+
+```java
+public User login(String email, String password) {
+    User example = new User();
+    example.setEmail(email);
+    example.setPassword(password);
+    List<User> list = hibernateTemplate.findByExample(example);
+    return list.isEmpty() ? null : list.get(0);
+}
+```
+
+`方法2` 使用Criteria查询
+
+```java
+public User login(String email, String password) {
+    DetachedCriteria criteria = DetachedCriteria.forClass(User.class);
+    criteria.add(Restrictions.eq("email", email))
+            .add(Restrictions.eq("password", password));
+    List<User> list = (List<User>) hibernateTemplate.findByCriteria(criteria);
+    return list.isEmpty() ? null : list.get(0);
+}
+```
+
+`方法3` 使用HQL查询
+
+```java
+List<User> list = (List<User>) hibernateTemplate.find("FROM User WHERE email=? AND password=?", email, password);
+```
+
+#### 2.3.5 集成JPA
+
+JPA就是JavaEE的一个ORM标准
+
+Hibernate是JPA的一个实现
+
+##### 配置
+
+```java
+@Configuration
+@ComponentScan
+@EnableTransactionManagement
+@PropertySource("jdbc.properties")
+public class AppConfig {
+    @Bean
+    DataSource createDataSource() { ... }
+    
+    //类比Hibernate的LocalSessionFactoryBean 和 SessionFactory
+    @Bean
+	LocalContainerEntityManagerFactoryBean createEntityManagerFactory(@Autowired DataSource dataSource) {
+        var entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
+        // 设置DataSource:
+        entityManagerFactoryBean.setDataSource(dataSource);
+        // 扫描指定的package获取所有entity class:
+        entityManagerFactoryBean.setPackagesToScan("com.itranswarp.learnjava.entity");
+        // 指定JPA的提供商是Hibernate:
+        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        entityManagerFactoryBean.setJpaVendorAdapter(vendorAdapter);
+        // 设定特定提供商自己的配置:
+        var props = new Properties();
+        props.setProperty("hibernate.hbm2ddl.auto", "update");
+        props.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
+        props.setProperty("hibernate.show_sql", "true");
+        entityManagerFactoryBean.setJpaProperties(props);
+        return entityManagerFactoryBean;
+    }
+    
+    //实例化一个JpaTransactionManager，以实现声明式事务
+    @Bean
+    PlatformTransactionManager createTxManager(@Autowired EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
+    }
+}
+```
+
+##### Service中使用
+
+```java
+@Component
+@Transactional
+public class UserService {
+    @PersistenceContext //不要使用Autowired，而是@PersistenceContext,表示多个线程共享
+    EntityManager em;
+    
+    //业务使用
+    public User getUserById(long id) {
+        User user = this.em.find(User.class, id);
+        if (user == null) {
+            throw new RuntimeException("User not found by id: " + id);
+        }
+        return user;
+    }
+}
+```
+
+这里注入的并不是真正的`EntityManager`，而是一个`EntityManager`的代理类
+
+Spring遇到标注了`@PersistenceContext`的`EntityManager`会自动注入代理，该代理会在必要的时候自动打开`EntityManager`。换句话说，多线程引用的`EntityManager`虽然是同一个代理类，但该代理类内部针对不同线程会创建不同的`EntityManager`实例
+
+#### 2.3.6 MyBatis
+
+Hibernate/JPA被称作全自动ORM，对比jdbcTemplate，主要自动化了以下2点
+
+1. 增删改的参数不需要手动传入，不需要去对应Entity的哪个属性
+2. 结果不需要用RowMapper函数把ResultSet转成JavaBean
+
+Mybatis被称为半自动化ORM，只实现了RowMapper的功能，还是需要输入SQL语句
+
+##### 配置 -  几种方法的配置区别表
+
+```java
+@Configuration
+@ComponentScan
+@EnableTransactionManagement
+@PropertySource("jdbc.properties")
+public class AppConfig {
+    @Bean
+    DataSource createDataSource() { ... }
+    
+    //创建SqlSessionFactory
+    @Bean
+    SqlSessionFactoryBean createSqlSessionFactoryBean(@Autowired DataSource dataSource) {
+        var sqlSessionFactoryBean = new SqlSessionFactoryBean();
+        sqlSessionFactoryBean.setDataSource(dataSource);
+        return sqlSessionFactoryBean;
+    }
+
+    //事务管理器
+    @Bean
+    PlatformTransactionManager createTxManager(@Autowired DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+    //不需要Template
+}
+```
+
+| JDBC       | Hibernate      | JPA                  | MyBatis           |
+| :--------- | :------------- | :------------------- | :---------------- |
+| DataSource | SessionFactory | EntityManagerFactory | SqlSessionFactory |
+| Connection | Session        | EntityManager        | SqlSession        |
+
+##### MyBatis Mapper
+
+和Hibernate不同的是，MyBatis使用Mapper来实现映射，而且Mapper必须是接口
+
+```java
+public interface UserMapper {
+	@Select("SELECT * FROM users WHERE id = #{id}")
+	User getById(@Param("id") long id);
+    
+    //如果是多个参数，用#占位符
+    @Select("SELECT * FROM users LIMIT #{offset}, #{maxResults}")
+	List<User> getAll(@Param("offset") int offset, @Param("maxResults") int maxResults);
+    
+    //别名返回，用AS
+    //SELECT id, name, email, created_time AS createdAt FROM users
+    
+    //INSERT 以#{obj.property}的方式写占位符
+    @Insert("INSERT INTO users (email, password, name, createdAt) VALUES (#{user.email}, #{user.password}, #{user.name}, #{user.createdAt})")
+    void insert(@Param("user") User user);
+    
+    //如果users表的id是自增主键，那么，我们在SQL中不传入id，但希望获取插入后的主键，需要再加一个@Options注解
+    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
+    @Insert("INSERT INTO users (email, password, name, createdAt) VALUES (#{user.email}, #{user.password}, #{user.name}, #{user.createdAt})")
+    void insert(@Param("user") User user);
+    
+    //Update和Delete
+    @Update("UPDATE users SET name = #{user.name}, createdAt = #{user.createdAt} WHERE id = #{user.id}")
+    void update(@Param("user") User user);
+
+    @Delete("DELETE FROM users WHERE id = #{id}")
+    void deleteById(@Param("id") long id);
+    
+}
+```
+
+使用@MapperScan来为所有Interface 类型的Mapper，自动创建实现类
+
+```java
+@MapperScan("com.itranswarp.learnjava.mapper")
+...其他注解...
+public class AppConfig {
+    ...
+}
+```
+
+##### 注入Sevice
+
+```java
+@Component
+@Transactional
+public class UserService {
+    // 注入UserMapper:
+    @Autowired
+    UserMapper userMapper;
+
+    public User getUserById(long id) {
+        // 调用Mapper方法:
+        User user = userMapper.getById(id);
+        if (user == null) {
+            throw new RuntimeException("User not found by id.");
+        }
+        return user;
+    }
+}
+```
 
 
 
