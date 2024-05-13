@@ -617,11 +617,267 @@ from/size也可以放在POST的data里
 }
 ```
 
-### 4.2 常用的在浏览器中查询ES的URL
+### 4.2 浏览器中查询ES的URL
 
 http://10.20.130.43:9200/_cat/indices?v   //查index总数
 
 http://10.20.130.43:9200/logstash-web-backend-2023.08.16  //查具体的index
+
+
+
+## 5 如何布置ELK的https环境
+
+### 5.1 部署docker compose环境
+
+```yaml
+version: '3.8'
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - TAKE_FILE_OWNERSHIP=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data/node1:/usr/share/elasticsearch/data
+      - ./logs/node1:/usr/share/elasticsearch/logs
+      -./conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./conf/server.crt:/usr/share/elasticsearch/config/server.crt
+      - ./conf/server.key:/usr/share/elasticsearch/config/server.key
+    ports:
+      - 9200:9200
+    networks:
+      - elastic  
+  es02:
+    ...
+  es03:
+    ...
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.7.0
+    ports:
+      - 5601:5601
+    network_mode: "host"       
+    environment:
+      ELASTICSEARCH_URL: https://localhost:9200
+      ELASTICSEARCH_HOSTS: https://localhost:9200
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 180s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == manager]
+    volumes:
+      - ./conf/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./conf/server.pem:/usr/share/kibana/config/server.pem
+      - ./conf/server.key:/usr/share/kibana/config/server.key
+      - ./conf/server.crt:/usr/share/kibana/config/server.crt
+  logstash:
+    image: docker.elastic.co/logstash/logstash-oss:7.7.0
+    ports:
+      - 9600:9600
+      - 5044:5044
+    network_mode: "host"
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 180s
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - ./conf/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./conf/server.crt:/usr/share/logstash/pipeline/conf/server.crt
+      - ./conf/server.key:/usr/share/logstash/pipeline/conf/server.key
+  filebeat:
+    image: docker.elastic.co/beats/filebeat-oss:7.7.0
+    network_mode: "host"
+    environment:
+      - LOG_PATH=/home/work/log/
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 280s
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - /home/test/log-2023-09-04-10-01-28/:/home/work/log/
+      - ./conf/filebeat.yml:/usr/share/filebeat/filebeat.yml
+  cronjob:
+    image: hub.netint.ca/ojo/cronjob:1.0
+    container_name: cronjob
+    network_mode: "host"
+    environment:
+      - http.cors.enabled=true
+      - http.cors.allow-origin="*"
+    volumes:
+      - ./conf/curator/delete_indices.yml:/home/work/delete_indices.yml
+      - ./conf/curator/curator.yml:/home/work/curator.yml
+
+networks:
+  elastic:
+    driver: bridge
+
+```
+
+### 5.2 https用到的几种证书格式
+
+#### 1. PEM (Privacy Enhanced Mail)
+
+- **扩展名**：`.pem`
+- **用途**：存储证书、公钥和私钥。
+- **特点**：使用 Base64 编码，通常以 "-----BEGIN CERTIFICATE-----" 开头，"-----END CERTIFICATE-----" 结尾。
+- **应用场景**：OpenSSL、Apache 等。
+
+##### 1.1 举例
+
+```
+scssCopy code-----BEGIN CERTIFICATE-----
+(Base64 encoded data)
+-----END CERTIFICATE-----
+```
+
+#### 2. CRT (Certificate)
+
+- **扩展名**：`.crt`
+- **用途**：通常只用于存储公开的证书。
+- **特点**：通常是 PEM 格式的一个子集。
+- **应用场景**：Apache、Nginx。
+
+##### 2.1 举例
+
+同 PEM 格式。
+
+#### 3. KEY (Key File)
+
+- **扩展名**：`.key`
+- **用途**：存储私钥。
+- **特点**：通常使用 PEM 格式，但只包含私钥。
+- **应用场景**：用于和 `.crt` 或 `.pem` 证书一起配置服务器。
+
+##### 3.1 举例
+
+```
+vbnetCopy code-----BEGIN RSA PRIVATE KEY-----
+(Base64 encoded data)
+-----END RSA PRIVATE KEY-----
+```
+
+#### 4. P12 (PKCS#12)
+
+- **扩展名**：`.p12` 或 `.pfx`
+- **用途**：存储证书链和私钥的一个二进制格式。
+- **特点**：通常用一个密码加密。
+- **应用场景**：Windows、Java 等。
+
+##### 4.1 举例
+
+二进制文件，不可直接查看内容。
+
+#### 总结和分析比较
+
+1. **PEM 和 CRT**：通常，`.crt` 是 `.pem` 的一个子集，主要用于存储证书。
+2. **PEM 和 KEY**：`.key` 通常也是 PEM 格式，但只包含私钥。
+3. **PEM 和 P12**：PEM 是文本格式，而 P12 是二进制格式并且通常用密码加密。
+4. **通用性**：PEM 格式最为通用，被许多不同的系统和应用支持。
+5. **安全性**：P12 由于有密码保护，通常被认为是更安全的。
+
+### 5.3 https握手和证书验证过程
+
+
+HTTPS (HyperText Transfer Protocol Secure) 是一种为了安全通信而设计的网络协议。其使用 SSL/TLS 协议对 HTTP 进行加密。在一个 HTTPS 连接建立时，客户端（通常是浏览器）与服务器进行一个过程来确保双方的身份和为接下来的数据传输建立加密通道，这个过程就叫做 SSL/TLS 握手。其中一个重要的环节是证书验证。以下是这个过程的简化版概述：
+
+1. **客户端发起请求**
+   - 客户端（如浏览器）向服务器发起 HTTPS 连接请求。
+2. **服务器响应**
+   - 服务器返回其公开的 SSL/TLS 证书，该证书包含服务器的公钥以及一些其他信息（如证书颁发机构、有效期等）。
+3. **客户端验证证书**
+   - 客户端首先检查证书的有效性。这包括：
+     1. 验证证书是否过期。
+     2. 验证证书是否被吊销。
+     3. 验证证书的颁发机构（CA）是否受信任。
+   - 如果证书没有通过验证，客户端会给出警告。
+4. **生成预主密钥**
+   - 客户端生成一个随机的预主密钥（Pre-Master Secret）。
+5. **加密预主密钥并发送**
+   - 客户端使用服务器的公钥对预主密钥进行加密，然后发送给服务器。
+6. **服务器解密预主密钥**
+   - 服务器使用自己的私钥来解密收到的预主密钥。
+7. **生成会话密钥**
+   - 客户端和服务器都使用这个预主密钥来通过一系列算法生成会话密钥（Session Keys）。
+8. **完成握手**
+   - 一旦会话密钥生成完毕，双方发送消息确认握手过程完成。从此以后，双方的通信就会使用这个会话密钥进行加密和解密。
+
+### 5.4 ES配置https
+
+```yaml
+
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/server.key
+xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/server.crt
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.verification_mode: certificate
+xpack.security.http.ssl.key: /usr/share/elasticsearch/config/server.key
+xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/server.crt
+
+```
+
+### 5.5 logstash配置https
+
+```ruby
+output {
+ 	...
+  else if [fields][log_type] == "web-backend" {
+    elasticsearch {
+      hosts => ["https://localhost:9200"]
+      ssl => true
+      ssl_certificate_verification => false
+      cacert => "/usr/share/logstash/pipeline/conf/server.crt"
+      index => "logstash-web-backend-%{+YYYY.MM.dd}"
+    }
+    stdout {}
+
+  }
+}
+```
+
+### 5.6 kibana配置https:
+
+```yaml
+elasticsearch.hosts: ["https://localhost:9200"]
+elasticsearch.ssl.verificationMode: none
+elasticsearch.ssl.certificateAuthorities: [ "/usr/share/kibana/config/server.pem" ]
+
+server.host: "0.0.0.0"  //这个一定要加，表示允许任意访问
+server.ssl.enabled: true
+//用和es相同的key和crt，才能确保浏览器不报跨域
+server.ssl.certificate: "/usr/share/kibana/config/server.crt" 
+server.ssl.key: "/usr/share/kibana/config/server.key"
+
+```
+
+产生pem的方法
+
+```shell
+openssl x509 -in server.crt -out server.pem -outform PEM
+```
+
+
+
+
 
 
 

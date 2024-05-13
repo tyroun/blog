@@ -832,6 +832,447 @@ HTTP模块中一般使用HTTP全局配置参数控制整体行为，使用server
     server_name www.google.com mail.google.com;
 ```
 
+##### 3. location
+
+```nginx
+    location[=|～|～＊|^～|@]/uri/{...}
+```
+
+location尝试根据用户请求中的URI匹配上面的/uri表达式，如果匹配，就选择location中的配置处理用户请求
+
+| 模式                | 含义                                                         |
+| :------------------ | :----------------------------------------------------------- |
+| location = /uri     | = 表示精确匹配，只有完全匹配上才能生效                       |
+| location ^~ /uri    | ^~ 开头对URL路径进行前缀匹配，并且在正则之前。               |
+| location ~ pattern  | 开头表示区分大小写的正则匹配                                 |
+| location ~* pattern | 开头表示不区分大小写的正则匹配                               |
+| location /uri       | 不带任何修饰符，也表示前缀匹配，但是在正则匹配之后           |
+| location /          | 通用匹配，任何未匹配到其它location的请求都会匹配到，相当于switch中的default |
+
+多个 location 配置的情况下匹配顺序为:
+
+- 首先精确匹配 `=`
+- 其次前缀匹配 `^~`
+- 其次是按文件中顺序的正则匹配
+- 然后匹配不带任何修饰的前缀匹配。
+- 最后是交给 `/` 通用匹配
+- 当有匹配成功时候，停止匹配，按当前匹配规则处理请求
+
+前缀匹配，如果有包含关系时，按最大匹配原则进行匹配。比如在前缀匹配：`location /dir01` 与 `location /dir01/dir02`，如有请求 `http://localhost/dir01/dir02/file `将最终匹配到 `location /dir01/dir02`
+
+##### 4．root
+
+```nginx
+    root path
+    location /download/{
+        root /opt/web/html/;
+    }
+```
+
+定义资源文件相对于HTTP请求的根目录
+
+如果有一个URI是/download/index/test.html，那么Web服务器会返回服务器上/opt/web/html/download/index/test.html文件的内容
+
+##### 5．alias
+
+以别名方式设置资源路径
+
+alias是用来设置文件资源路径的，与root的不同点在于如何解读location后面的uri参数，alias和root会以不同的方式将用户请求映射到真正的磁盘文件上。例如，有一个请求的URI是/conf/nging.conf，而实际文件在/usr/local/nginx/conf/nginx.conf，那么可以使用下面的方式设置
+
+```nginx
+	# alias 方式
+    location /conf{
+        alias /usr/local/nginx/conf/;
+    }
+	# root 方式
+    location /conf{
+        root /usr/local/nginx
+    }
+	# alias添加正则
+    location ～ ^/test/(\w+)\.(\w+)${
+        alias /usr/local/nginx/$2/$1.$2;
+    }
+```
+
+##### 6．index
+
+首页，如果访问站点的URI是/，一般返回网站首页。index后面可以跟多个参数，Nginx按照顺序访问这些文件
+
+```nginx
+    index file ...;
+    index index.html;
+    location /{
+        root path;
+        index /index.html /html/index.php /index.asp;
+    }
+```
+
+##### 7. error_page
+
+根据HTTP返回码重定向页面
+
+```nginx
+    error_page code[code...][=|=answer-code]uri|@named_location
+
+    error_page 404              /404.html;
+    error_page 502503 504     /50x.html;
+    error_page 403              http://example.com/forbidden.html;
+    error_page 404              = @fetch;
+
+    #虽然重定向了URI，但返回的HTTP错误码还是原来的值，可以使用=更改返回的错误码
+    error_page 404 =200 /empty.gif;
+    error_page 404 =403 /forbidden.gif;
+
+	#如果不想修改URI，只想重定向到另外一个location中处理
+    location / {
+        error_page 404 @fallback;
+    }
+
+
+    location @fallback{
+        proxy_pass http://backend;
+    }
+```
+
+##### 9 try_files
+
+```nginx
+    try_files path1 [path2] uri;
+
+    try_files /system/maintenance.html $uri $uri/index.html $uri.html @other;
+    location @other{
+        proxy_pass http://backend;
+    }
+
+    #与error_page配合使用
+    location / {
+        try_files $uri $uri/ /error.php?c=404 =404;
+    }
+```
+
+说明：try_fies后要跟若干路径，最后必须要有uri参数，表示尝试按照顺序访问每一个path，如果可以有效地读取，就直接向用户返回这个path对应的文件并结束请求，否则继续向下访问。如果都找不到，就定向到最后的uri上，所以这个uri必须存在，而且应该是可以有效重定向的
+
+##### 25 keepalive超时时间
+
+```nginx
+    keepalive_timeout time;
+```
+
+一个keepalive连接在闲置超过一定时间后，服务器和浏览器都会关闭这个连接。这个值是用于限制Nginx服务器的，Nginx会把这个值传给浏览器，但每个浏览器对待keepalive的策略可能是不同的
+
+
+
+
+
+# Keepalived 主从环境部署
+
+## Bare metal环境
+
+### 1 安装keepavlived
+
+```shell
+sudo apt-get install keepalived
+```
+
+### 2 修改配置文件
+
+```shell
+# 在/home/test下
+git clone git@cn-git.netint.ca:ojo-system/gateway.git
+cp conf/keepalived.conf /etc/keepalived
+```
+
+修改keepalived.conf的本机网卡和虚拟IP
+
+```json
+vrrp_instance redis {    
+    state BACKUP
+    interface enp5s0		//这个改成本机网卡    
+    priority 100
+    advert_int 1
+    virtual_ipaddress {
+       10.20.130.94           //这行改成相应的虚拟地址
+    }
+}
+```
+
+### 3 修改mysql的设置
+
+/etc/mysql/mysql.conf.d/mysqld.cnf
+
+```
+bind-address = 0.0.0.0
+server-id = xxx  # 这个ID确保主从服务器要不一样
+validate_password=off         #关闭密码安全策略
+default_password_lifetime=0     #设置密码不过期
+```
+
+配置mysql免密登录
+
+```shell
+mysql_config_editor set --login-path=local --user=root --port=3306 --password
+mysql_config_editor print --all
+用root登录mysql
+GRANT SYSTEM_USER ON *.* TO 'root'@'%';
+```
+
+### 4 配置主从机免密ssh访问
+
+如果是裸机环境，以下ssh需要拷贝到/root/.ssh/下
+
+```shell
+# 在MachineA上
+ssh-keygen -t rsa
+# 在MachineB上
+ssh-keygen -t rsa
+
+# 在MachineA上
+scp ~/.ssh/id_rsa.pub userB@MachineB:~/MachineA.pub
+# 在MachineB上
+scp ~/.ssh/id_rsa.pub userA@MachineA:~/MachineB.pub
+
+# 在MachineA上
+cat ~/MachineB.pub >> ~/.ssh/authorized_keys
+# 在MachineB上
+cat ~/MachineA.pub >> ~/.ssh/authorized_keys
+
+# 在两台机器上执行
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+```
+
+### 5 修改运行脚本
+
+scripts/.mysqlenv
+
+```shell
+REMOTE_IP=10.20.130.17  #这个改成另一台服务器IP
+```
+
+启动keepalived
+
+```shell
+service keepalived restart
+```
+
+
+
+## Mysql主从机制详解
+
+### 1 实现原理
+
+异步模式是一种基于偏移量的主从复制，**实现原理是:** 
+
+1. 主库开启binlog功能并授权从库连接主库
+2. 从库通过change master得到主库的相关同步信息然后连接主库进行验证，
+3. 主库IO线程根据从库slave线程的请求，从master.info开始记录的位置点向下开始取信息，同时把取到的位置点和最新的位置与binlog信息一同发给从库IO线程,
+4. 从库将相关的sql语句存放在relay-log里面，最终从库的sql线程将relay-log里的sql语句应用到从库上
+
+所谓异步模式指的是MySQL 主服务器上I/O thread 线程将二进制日志写入binlog文件之后就返回客户端结果，不会考虑二进制日志是否完整传输到从服务器以及是否完整存放到从服务器上的relay日志中，这种模式一旦主服务(器)宕机，数据就可能会发生丢失。
+
+### 2 三种复制模式
+
+**从MySQL5.5开始，MySQL以插件的形式支持半同步复制**。先来区别下mysql几个同步模式概念：
+
+**异步复制（Asynchronous replication）**
+MySQL默认的复制即是异步的，主库在执行完客户端提交的事务后会立即将结果返给给客户端，并不关心从库是否已经接收并处理，这样就会有一个问题，主如果crash掉了，此时主上已经提交的事务可能并没有传到从上，如果此时，强行将从提升为主，可能导致新主上的数据不完整。
+
+**全同步复制（Fully synchronous replication）**
+指当主库执行完一个事务，所有的从库都执行了该事务才返回给客户端。因为需要等待所有从库执行完该事务才能返回，所以全同步复制的性能必然会收到严重的影响。
+
+**半同步复制（Semisynchronous replication）**
+介于异步复制和全同步复制之间，主库在执行完客户端提交的事务后不是立刻返回给客户端，而是等待至少一个从库接收到并写到relay log中才返回给客户端。相对于异步复制，半同步复制提高了数据的安全性，同时它也造成了一定程度的延迟，这个延迟最少是一个TCP/IP往返的时间。所以，**半同步复制最好在低延时的网络中使用**。
+
+### 3 半同步机制具体特性
+
+\- 从库会在连接到主库时告诉主库，它是不是配置了半同步。
+\- 如果半同步复制在主库端是开启了的，并且至少有一个半同步复制的从库节点，那么此时主库的事务线程在提交时会被阻塞并等待，结果有两种可能，要么至少一个从库节点通知它已经收到了所有这个事务的Binlog事件，要么一直等待直到超过配置的某一个时间点为止，而此时，半同步复制将自动关闭，转换为异步复制。
+\- 从库节点只有在接收到某一个事务的所有Binlog，将其写入并Flush到Relay Log文件之后，才会通知对应主库上面的等待线程。
+\- 如果在等待过程中，等待时间已经超过了配置的超时时间，没有任何一个从节点通知当前事务，那么此时主库会自动转换为异步复制，当至少一个半同步从节点赶上来时，主库便会自动转换为半同步方式的复制。
+\- 半同步复制必须是在主库和从库两端都开启时才行，如果在主库上没打开，或者在主库上开启了而在从库上没有开启，主库都会使用异步方式复制。
+
+### 4 半同步复制的潜在问题
+
+1. 事务还没发送到从库上
+   此时，客户端会收到事务提交失败的信息，客户端会重新提交该事务到新的主上，当宕机的主库重新启动后，以从库的身份重新加入到该主从结构中，会发现，该事务在从库中被提交了两次，一次是之前作为主的时候，一次是被新主同步过来的。
+2. 事务已经发送到从库上
+   此时，从库已经收到并应用了该事务，但是客户端仍然会收到事务提交失败的信息，重新提交该事务到新的主上。
+
+**无数据丢失的半同步复制**
+针对上述潜在问题，MySQL 5.7引入了一种新的半同步方案：Loss-Less半同步复制。针对上面这个图，"Waiting Slave dump"被调整到"Storage Commit"之前。当然，之前的半同步方案同样支持，MySQL 5.7.2引入了一个新的参数进行控制: rpl_semi_sync_master_wait_point, 这个参数有两种取值：1) **AFTER_SYNC** , 这个是新的半同步方案，Waiting Slave dump在Storage Commit之前。2) AFTER_COMMIT, 这个是老的半同步方案。
+
+### 5 半同步复制部署
+
+要想使用半同步复制，必须满足以下几个条件：
+1）MySQL 5.5及以上版本
+2）变量have_dynamic_loading为YES （查看命令：show variables like "have_dynamic_loading";）
+3）主从复制已经存在 (即提前部署mysql主从复制环境,主从同步要配置基于整个数据库的，不要配置基于某个库的同步，即同步时不要过滤库)
+
+#### 5.1 加载插件
+
+因用户需执行INSTALL PLUGIN, SET GLOBAL, STOP SLAVE和START SLAVE操作，所以用户需有SUPER权限。
+
+半同步复制是一个功能模块，库要能支持动态加载才能实现半同步复制! (安装的模块存放路径为/usr/local/mysql/lib/plugin）
+主数据库执行:
+
+```mysql
+mysql> INSTALL PLUGIN rpl_semi_sync_master SONAME 'semisync_master.so';
+
+[要保证/usr/local/mysql/lib/plugin/目录下有semisync_master.so文件 (默认编译安装后就有)]
+---------------------------------------------------------------------------------------
+如果要卸载(前提是要关闭半同步复制功能)，就执行
+mysql> UNINSTALL PLUGIN rpl_semi_sync_master;
+```
+
+从数据库执行:
+
+```mysql
+mysql> INSTALL PLUGIN rpl_semi_sync_slave SONAME 'semisync_slave.so';
+[要保证/usr/local/mysql/lib/plugin/目录下有semisync_slave.so文件 (默认编译安装后就有)]
+---------------------------------------------------------------------------------------
+如果要卸载(前提是要关闭半同步复制功能)，就执行
+mysql> UNINSTALL PLUGIN rpl_semi_sync_slave;
+```
+
+#### 5.2 查看插件是否加载成功
+
+```mysql
+mysql> show plugins;
+........
+| rpl_semi_sync_master    | ACTIVE  | REPLICATION    | semisync_master.so | GPL   |
+```
+
+#### 5.3 启动半同步复制
+
+主数据库执行:
+
+```mysql
+mysql> SET GLOBAL rpl_semi_sync_master_enabled = 1;
+```
+
+从数据库执行:
+
+```mysql
+mysql> SET GLOBAL rpl_semi_sync_slave_enabled = 1;
+```
+
+主数据库的my.cnf配置文件中添加:
+
+```mysql
+plugin-load=rpl_semi_sync_master=semisync_master.so
+rpl_semi_sync_master_enabled=1
+```
+
+从数据库的my.cnf配置文件中添加:
+
+```mysql
+plugin-load=rpl_semi_sync_slave=semisync_slave.so
+rpl_semi_sync_slave_enabled=1
+```
+
+在个别高可用架构下，master和slave需同时启动，以便在切换后能继续使用半同步复制！即在主从数据库的my.cnf配置文件中都要添加:
+
+```mysql
+plugin-load = "rpl_semi_sync_master=semisync_master.so;rpl_semi_sync_slave=semisync_slave.so"
+rpl-semi-sync-master-enabled = 1
+rpl-semi-sync-slave-enabled = 1
+```
+
+#### 5.4 重启从数据库上的IO线程
+
+```mysql
+mysql> STOP SLAVE IO_THREAD;
+mysql> START SLAVE IO_THREAD;
+```
+
+**特别注意:** 如果没有重启，则默认的还是异步复制模式！
+
+#### 5.5 查看半同步是否在运行
+
+主数据库:
+
+```mysql
+mysql> show status like 'Rpl_semi_sync_master_status';
++-----------------------------+-------+
+| Variable_name               | Value |
++-----------------------------+-------+
+| Rpl_semi_sync_master_status | ON    |
++-----------------------------+-------+
+1 row in set (0.00 sec)
+```
+
+从数据库:
+
+```mysql
+mysql> show status like 'Rpl_semi_sync_slave_status';
++----------------------------+-------+
+| Variable_name              | Value |
++----------------------------+-------+
+| Rpl_semi_sync_slave_status | ON    |
++----------------------------+-------+
+1 row in set (0.20 sec)
+```
+
+#### 5.6 其他变量说明
+
+**环境变量（show variables like '%Rpl%';）**
+
+`rpl_semi_sync_master_wait_for_slave_count` -MySQL 5.7.3引入的，该变量设置主需要等待多少个slave应答，才能返回给客户端，默认为1。
+
+`rpl_semi_sync_master_wait_no_slave`
+ON -  默认值，当状态变量Rpl_semi_sync_master_clients中的值小于rpl_semi_sync_master_wait_for_slave_count时，Rpl_semi_sync_master_status依旧显示为ON。
+
+OFF - 当状态变量Rpl_semi_sync_master_clients中的值于rpl_semi_sync_master_wait_for_slave_count时，Rpl_semi_sync_master_status立即显示为OFF，即异步复制。
+
+**状态变量（show status like '%Rpl_semi%';）**
+
+`Rpl_semi_sync_master_clients`   -     当前半同步复制从的个数，如果是一主多从的架构，并不包含异步复制从的个数。
+
+`Rpl_semi_sync_master_no_tx`  -  The number of commits that were not acknowledged successfully by a slave.
+
+`Rpl_semi_sync_master_yes_tx`  -  The number of commits that were acknowledged successfully by a slave.
+
+#### 5.7 简单总结
+
+1.  在一主多从的架构中，如果要开启半同步复制，并不要求所有的从都是半同步复制。
+2. MySQL 5.7极大的提升了半同步复制的性能。
+     5.6版本的半同步复制，dump thread 承担了两份不同且又十分频繁的任务：传送binlog 给slave ，还需要等待slave反馈信息，而且这两个任务是串行的，dump thread 必须等待 slave 返回之后才会传送下一个 events 事务。dump thread 已然成为整个半同步提高性能的瓶颈。在高并发业务场景下，这样的机制会影响数据库整体的TPS 。
+     5.7版本的半同步复制中，独立出一个 ack collector thread ，专门用于接收slave 的反馈信息。这样master 上有两个线程独立工作，可以同时发送binlog 到slave ，和接收slave的反馈
+
+#### 5.8 mysql.cnf其他配置
+
+```shell
+主数据库172.16.60.205配置：
+[root@mysql-master ~]# cat /usr/local/mysql/my.cnf
+.......
+server-``id``=1
+log-bin=mysql-bin
+sync_binlog = 1
+binlog_checksum = none
+binlog_format = mixed
+plugin-load=rpl_semi_sync_master=semisync_master.so
+rpl_semi_sync_master_enabled=ON         #或者设置为"1"，即开启半同步复制功能
+rpl-semi-sync-master-timeout=1000       #超时时间为1000ms，即1s
+
+```
+
+ 
+
+```shell
+从数据库172.16.60.206配置：
+[root@mysql-slave ~]# cat /usr/local/mysql/my.cnf
+.........
+server-``id``=2
+log-bin=mysql-bin
+slave-skip-errors = all
+plugin-load=rpl_semi_sync_slave=semisync_slave.so
+rpl_semi_sync_slave_enabled=ON
+```
+
+ 然后从库同步操作，不需要跟master_log_file 和 master_log_pos=120
+
+如果从库不切换的确可以不设，这个时候默认从上次从库同步的位置开始
+
 
 
 
