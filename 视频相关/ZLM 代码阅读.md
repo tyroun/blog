@@ -4,50 +4,54 @@
 
 ##epoll
 
-### epoll和Select/poll区别
+### epoll 和 Select/poll 区别
 
-|     \      |                       select                       |                       poll                       |                            epoll                             |
-| :--------: | :------------------------------------------------: | :----------------------------------------------: | :----------------------------------------------------------: |
-|  操作方式  |                        遍历                        |                       遍历                       |                             回调                             |
-|  底层实现  |                        数组                        |                       链表                       |                            哈希表                            |
-|   IO效率   |      每次调用都进行线性遍历，时间复杂度为O(n)      |     每次调用都进行线性遍历，时间复杂度为O(n)     | 事件通知方式，每当fd就绪，系统注册的回调函数就会被调用，将就绪fd放到rdllist里面。时间复杂度O(1) |
-| 最大连接数 |             1024（x86）或 2048（x64）              |                      无上限                      |                            无上限                            |
-|   fd拷贝   | 每次调用select，都需要把fd集合从用户态拷贝到内核态 | 每次调用poll，都需要把fd集合从用户态拷贝到内核态 |  调用epoll_ctl时拷贝进内核并保存，之后每次epoll_wait不拷贝   |
+|     \      |                        select                         |                        poll                         |                                                 epoll                                                  |
+| :--------: | :---------------------------------------------------: | :-------------------------------------------------: | :----------------------------------------------------------------------------------------------------: |
+|  操作方式  |                         遍历                          |                        遍历                         |                                                  回调                                                  |
+|  底层实现  |                         数组                          |                        链表                         |                                                 哈希表                                                 |
+|  IO 效率   |       每次调用都进行线性遍历，时间复杂度为 O(n)       |      每次调用都进行线性遍历，时间复杂度为 O(n)      | 事件通知方式，每当 fd 就绪，系统注册的回调函数就会被调用，将就绪 fd 放到 rdllist 里面。时间复杂度 O(1) |
+| 最大连接数 |               1024（x86）或 2048（x64）               |                       无上限                        |                                                 无上限                                                 |
+|  fd 拷贝   | 每次调用 select，都需要把 fd 集合从用户态拷贝到内核态 | 每次调用 poll，都需要把 fd 集合从用户态拷贝到内核态 |                     调用 epoll_ctl 时拷贝进内核并保存，之后每次 epoll_wait 不拷贝                      |
 
-**传统select/poll的另一个致命弱点就是当你拥有一个很大的socket集合，由于网络得延时，使得任一时间只有部分的socket是"活跃" 的，而select/poll每次调用都会线性扫描全部的集合，导致效率呈现线性下降。**
+**传统 select/poll 的另一个致命弱点就是当你拥有一个很大的 socket 集合，由于网络得延时，使得任一时间只有部分的 socket 是"活跃" 的，而 select/poll
+每次调用都会线性扫描全部的集合，导致效率呈现线性下降。**
 
-**但是epoll不存在这个问题，它只会对"活跃"的socket进 行操作**---这是因为在内核实现中epoll是根据每个fd上面的callback函数实现的。于是，只有"活跃"的socket才会主动去调用 callback函数，其他idle状态的socket则不会，在这点上，epoll实现了一个<font color="pink"> "伪"AIO</font>，因为这时候推动力在os内核。
+**但是 epoll 不存在这个问题，它只会对"活跃"的 socket 进 行操作**---这是因为在内核实现中 epoll 是根据每个 fd 上面的 callback 函数实现的。于是，只有"活跃"的 socket 才会主动去调用
+callback 函数，其他 idle 状态的 socket 则不会，在这点上，epoll 实现了一个<font color="pink"> "伪"AIO</font>，因为这时候推动力在 os 内核。
 
 ### epoll 原理
 
 #### 1 将控制与阻塞分离。
 
-epoll精巧的使用了3个方法来实现select方法要做的事：
+epoll 精巧的使用了 3 个方法来实现 select 方法要做的事：
 
-1. 新建epoll描述符==epoll_create()
-2. epoll_ctrl(epoll描述符，添加或者删除所有待监控的连接)
-3. 返回的活跃连接 ==epoll_wait（ epoll描述符 ）
-4. epoll_ctrl是不太频繁调用的，而epoll_wait是非常频繁调用的。这时，epoll_wait却几乎没有入参，这比select的效率高出一大截，而且，它也不会随着并发连接的增加使得入参越发多起来，导致内核执行效率下降
+1. 新建 epoll 描述符==epoll_create()
+2. epoll_ctrl(epoll 描述符，添加或者删除所有待监控的连接)
+3. 返回的活跃连接 ==epoll_wait（ epoll 描述符 ）
+4. epoll_ctrl 是不太频繁调用的，而 epoll_wait 是非常频繁调用的。这时，epoll_wait 却几乎没有入参，这比 select
+   的效率高出一大截，而且，它也不会随着并发连接的增加使得入参越发多起来，导致内核执行效率下降
 
 #### 2 mmap
 
-内核和用户态操作的fd，都是同一块内存
+内核和用户态操作的 fd，都是同一块内存
 
 #### 3 RBTree
 
-1. epoll_ctl会在一颗RBtree上添加删除event，以fd排序
+1. epoll_ctl 会在一颗 RBtree 上添加删除 event，以 fd 排序
 
-2. 中断发生，fd状态改变，fd的回调函数ep_poll_callback被调用
+2. 中断发生，fd 状态改变，fd 的回调函数 ep_poll_callback 被调用
 
-3 /ep_poll_callback将相应fd对应epitem加入双向链表rdlist
+3 /ep_poll_callback 将相应 fd 对应 epitem 加入双向链表 rdlist
 
-4. epoll_wait发现rdlist不为空，就被唤醒继续执行
+4. epoll_wait 发现 rdlist 不为空，就被唤醒继续执行
 
-5. ep_events_transfer函数将rdlist中的epitem拷贝到txlist中，并将rdlist清空。
+5. ep_events_transfer 函数将 rdlist 中的 epitem 拷贝到 txlist 中，并将 rdlist 清空。
 
-6. ep_send_events函数（很关键），它扫描txlist中的每个epitem，调用其关联fd对用的poll方法。此时对poll的调用仅仅是取得fd上较新的events（防止之前events被更新），之后将取得的events和相应的fd发送到用户空间（封装在struct epoll_event，从epoll_wait返回）
+6. ep_send_events 函数（很关键），它扫描 txlist 中的每个 epitem，调用其关联 fd 对用的 poll 方法。此时对 poll 的调用仅仅是取得 fd 上较新的 events（防止之前 events
+   被更新），之后将取得的 events 和相应的 fd 发送到用户空间（封装在 struct epoll_event，从 epoll_wait 返回）
 
-### epoll使用
+### epoll 使用
 
 ```c
 int epoll_create ( int size );
@@ -66,13 +70,13 @@ int epoll_ctl ( int epfd, int op, int fd, struct epoll_event *event );
 struct epoll_event
 {
     __unit32_t events;    // epoll事件
-    epoll_data_t data;     // 用户数据 
+    epoll_data_t data;     // 用户数据
 };
 
 typedef union epoll_data
 {
-    void* ptr;              //指定与fd相关的用户数据 
-    int fd;                 //指定事件所从属的目标文件描述符 
+    void* ptr;              //指定与fd相关的用户数据
+    int fd;                 //指定事件所从属的目标文件描述符
     uint32_t u32;
     uint64_t u64;
 } epoll_data_t;
@@ -81,13 +85,17 @@ typedef union epoll_data
 int epoll_wait (int epfd,struct epoll_event* events,int maxevents,int timeout );
 ```
 
-### LT与ET模式
+### LT 与 ET 模式
 
-LT：LT(level triggered)是缺省的工作方式，并且同时支持block和no-block socket。在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的fd进行IO操作。**如果你不作任何操作，内核还是会继续通知你的**。传统的select/poll都是这种模型的代表
+LT：LT(level triggered)是缺省的工作方式，并且同时支持 block 和 no-block socket。在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的 fd 进行 IO 操作。**
+如果你不作任何操作，内核还是会继续通知你的**。传统的 select/poll 都是这种模型的代表
 
-ET：ET (edge-triggered) 是高速工作方式，只支持no-block socket(非阻塞)。 在这种模式下，**当描述符从未就绪变为就绪时，内核就通过epoll告诉你，然后它会假设你知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的 就绪通知**，直到你做了某些操作而导致那个文件描述符不再是就绪状态(比如 你在发送，接收或是接受请求，或者发送接收的数据少于一定量时导致了一个EWOULDBLOCK 错误)。但是请注意，如果一直不对这个fd作IO操作(从而导致它再次变成未就绪)，内核就不会发送更多的通知(only once)。不过在TCP协议中，ET模式的加速效用仍需要更多的benchmark确认
+ET：ET (edge-triggered) 是高速工作方式，只支持 no-block socket(非阻塞)。 在这种模式下，**当描述符从未就绪变为就绪时，内核就通过 epoll
+告诉你，然后它会假设你知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的 就绪通知**，直到你做了某些操作而导致那个文件描述符不再是就绪状态(比如 你在发送，接收或是接受请求，或者发送接收的数据少于一定量时导致了一个
+EWOULDBLOCK 错误)。但是请注意，如果一直不对这个 fd 作 IO 操作(从而导致它再次变成未就绪)，内核就不会发送更多的通知(only once)。不过在 TCP 协议中，ET 模式的加速效用仍需要更多的 benchmark
+确认
 
-## ZLM中的ZLToolKit
+## ZLM 中的 ZLToolKit
 
 ### Poller
 
@@ -100,12 +108,12 @@ Class EventPoller : public TaskExecutor{
     EventPoller(ThreadPool::Priority priority ){
         //调用epoll_create创建_epoll_fd
         _epoll_fd = epoll_create(EPOLL_SIZE);
-        
+
         //添加内部管道事件
         //不同线程要触发epoll_wait时，对着_pipe写，然后把回调放入_list_task。在onPipeEvent中取出执行
         addEvent(_pipe.readFD(), Event_Read, [this](int event) { onPipeEvent(); }) == -1)
     }
-    
+
     //添加事件监听
     int addEvent(int fd, int event, PollEventCB cb){
          if (isCurrentThread()) {
@@ -117,13 +125,13 @@ Class EventPoller : public TaskExecutor{
          //如果不是run_loop这个线程添加的event，用async()函数把当前这个addEvent添加到内部管道事件，通过写_pipe通知run_loop线程执行
          async(...)
     }
-    
-    
+
+
     Task::Ptr EventPoller::async_l(...){
-         _list_task.emplace_back(ret); //添加入_list_task         
+         _list_task.emplace_back(ret); //添加入_list_task
     	  _pipe.write("", 1);//写数据到管道,唤醒主线程
     }
-    
+
     void runLoop(bool blocked,bool regist_self){
         if (blocked) {
             while (!_exit_flag) {
@@ -133,24 +141,24 @@ Class EventPoller : public TaskExecutor{
                     auto cb = it->second;
                     (*cb)(toPoller(ev.events)); //执行回调
                 }
-                
+
             }
         }else{
             //新开线程
             _loop_thread = new thread(&EventPoller::runLoop, this, true, regist_self);
-        }        
-    }        
+        }
+    }
 }
 ```
 
-EventPollerPool - 这个是有多个线程在epoll_wait的线程池
+EventPollerPool - 这个是有多个线程在 epoll_wait 的线程池
 
 ```c++
 class EventPollerPool : public TaskExecutorGetterImp {
     EventPollerPool() {
-        auto size = addPoller("event poller", s_pool_size, ThreadPool::PRIORITY_HIGHEST, true);        
+        auto size = addPoller("event poller", s_pool_size, ThreadPool::PRIORITY_HIGHEST, true);
     }
-    
+
     addPoller(const string &name,size_t size,...){
         for (size_t i = 0; i < size; ++i) {
             //创建EventPoller
@@ -165,7 +173,7 @@ class EventPollerPool : public TaskExecutorGetterImp {
             _threads.emplace_back(std::move(poller)); //_threads表示可执行的线程池
         }
     }
-    
+
 }
 ```
 
@@ -173,13 +181,13 @@ class EventPollerPool : public TaskExecutorGetterImp {
 
 TaskExecutor
 
-就是提供了async和sync方法，EventPoller通过epoll实现了async方法，sync方法就是直接调用回调函数，只是对异常做了以下处理
+就是提供了 async 和 sync 方法，EventPoller 通过 epoll 实现了 async 方法，sync 方法就是直接调用回调函数，只是对异常做了以下处理
 
 TaskExecutorGetterImp
 
-就是维护_threads里面的所有TaskExecutor
+就是维护\_threads 里面的所有 TaskExecutor
 
-ThreadPool - 这个是直接执行task的线程池
+ThreadPool - 这个是直接执行 task 的线程池
 
 ```c++
 class ThreadPool : public TaskExecutor {
@@ -188,18 +196,18 @@ class ThreadPool : public TaskExecutor {
             start(); //启动线程
         }
     }
-    
+
     async(TaskIn task, bool may_sync = true){
         _queue.push_task(ret); //_queue维护一个回调函数map
     }
-    
+
     //start以后，就从_queue里拿出所有task，每个开一个线程执行
-    void start() {        
+    void start() {
         for (size_t i = 0; i < total; ++i) {
             _thread_group.create_thread(bind(&ThreadPool::run, this));
         }
     }
-    
+
     void run() {
         Task::Ptr task;
         while (true) {
@@ -208,198 +216,189 @@ class ThreadPool : public TaskExecutor {
                 //空任务，退出线程
                 break;
             }
-            sleepWakeUp();            
+            sleepWakeUp();
             (*task)();
             task = nullptr;
-            
+
         }
     }
-    
+
 }
 ```
 
 ### Network
 
-Socket - 负责操作实际的socket调用流程，最终调用到TCPServer注册来的回调
+Socket - 负责操作实际的 socket 调用流程，最终调用到 TCPServer 注册来的回调
 
-
-
-TCPServer - 负责注册socket的创建，监听回调函数
-
-
+TCPServer - 负责注册 socket 的创建，监听回调函数
 
 ## RTP Server 收到流
 
 ### 1 WebApi.cpp/openRtpServer
 
-获取stream_id，默认stream_id有值且enable_tcp=1
+获取 stream_id，默认 stream_id 有值且 enable_tcp=1
 
-创建RtpServer* server
+创建 RtpServer\* server
 
 server->start
 
-server->setOnDetach注册detach时的回调
+server->setOnDetach 注册 detach 时的回调
 
-在s_rtpServerMap里注册这个server
+在 s_rtpServerMap 里注册这个 server
 
-val["port"] = server->getPort() //回复json
+val["port"] = server->getPort() //回复 json
 
 ### 2 RtpServer::start
 
-创建Socket
+创建 Socket
 
-创建并启动TCP Server
+创建并启动 TCP Server
 
-启动rtcp
+启动 rtcp
 
-对rtp_socket注册回调setOnRead
+对 rtp_socket 注册回调 setOnRead
 
-​	调用inputRtp解析Rtp
+​ 调用 inputRtp 解析 Rtp
 
-​	调用onRecvRtp回复rtcp
+​ 调用 onRecvRtp 回复 rtcp
 
 ### 3 RtpProcess::inputRtp
 
-如果第一次启动，调用emitOnPublish
+如果第一次启动，调用 emitOnPublish
 
-如果config了kDumpDir，那么把rtp写到_save_file_rtp
+如果 config 了 kDumpDir，那么把 rtp 写到\_save_file_rtp
 
-创建GB28181Process的_process
+创建 GB28181Process 的\_process
 
-调用_process->inputRtp
+调用\_process->inputRtp
 
 ### 4 RtpProcess::emitOnPublish
 
-建立MediaSource
+建立 MediaSource
 
-创建MultiMediaSourceMuxer类，构造函数里面构建了多个Muxer(_rtmp/_rtsp/_hls/_mp4/_ts/_fmp4)
+创建 MultiMediaSourceMuxer 类，构造函数里面构建了多个 Muxer(\_rtmp/\_rtsp/\_hls/\_mp4/\_ts/\_fmp4)
 
+### 4 GB28181Process::inputRtp
 
+产生\_rtp_receiver=RtpReceiverImp
 
+1. 注册`GB28181Process::onRtpSorted`回调，表示解析出一个完整的 Rtp 包时，调用\_rtp_decoder->inputRtp
 
+根据不同的 RtpHeader->pt，产生不同的\_rtp_decoder。265 的话就是 H265RtpDecoder
 
+\_interface->addTrack 就是调用了 `RtpProcess::addTrack`，这里面把这个流加入到了 MultiMediaSourceMuxer 里面
 
+\_rtp_decoder->addDelegate 注册了 frame 的回调。收到一帧 frame 后，会调用`GB28181Process::onRtpDecode`
 
-### 4  GB28181Process::inputRtp
-
-产生_rtp_receiver=RtpReceiverImp
-
- 	1. 注册`GB28181Process::onRtpSorted`回调，表示解析出一个完整的Rtp包时，调用_rtp_decoder->inputRtp
-
-根据不同的RtpHeader->pt，产生不同的_rtp_decoder。265的话就是H265RtpDecoder
-
-_interface->addTrack就是调用了 `RtpProcess::addTrack`，这里面把这个流加入到了MultiMediaSourceMuxer里面
-
-_rtp_decoder->addDelegate注册了frame的回调。收到一帧frame后，会调用`GB28181Process::onRtpDecode`
-
-调用RtpReceiverImp::inputRtp -> RtpTrack::inputRtp解析收到包
+调用 RtpReceiverImp::inputRtp -> RtpTrack::inputRtp 解析收到包
 
 ### 5 RtpTrack::inputRtp
 
-解析RTP header，比对ssrc
+解析 RTP header，比对 ssrc
 
-RtpPacket::create()创建一个RtpPacket
+RtpPacket::create()创建一个 RtpPacket
 
-出来头4个byte填了rtp over tcp头，其他memcpy
+出来头 4 个 byte 填了 rtp over tcp 头，其他 memcpy
 
-调用sortPacket
+调用 sortPacket
 
- 	1. 根据seq排序，然后放入_pkt_sort_cache_map
- 	2. tryPopPacket()尝试是否可以pop出一个完整的packet
-      	1. popPacket() -> popIterator() 弹出packet，调用RtpTrackImp::OnSorted回调
-      	2. RtpTrackImp::OnSorted在RtpReceiverImp构造时传入，就是`GB28181Process::onRtpSorted` -> H265RtpDecoder::inputRtp
+1. 根据 seq 排序，然后放入\_pkt_sort_cache_map
+2. tryPopPacket()尝试是否可以 pop 出一个完整的 packet
+    1. popPacket() -> popIterator() 弹出 packet，调用 RtpTrackImp::OnSorted 回调
+    2. RtpTrackImp::OnSorted 在 RtpReceiverImp 构造时传入，就是`GB28181Process::onRtpSorted` -> H265RtpDecoder::inputRtp
 
 ### 6 H265RtpDecoder::inputRtp
 
-调用H265RtpDecoder::decodeRtp
+调用 H265RtpDecoder::decodeRtp
 
-根据不同的nal，调用H265RtpDecoder::unpackAp 
+根据不同的 nal，调用 H265RtpDecoder::unpackAp
 
---> H265RtpDecoder::singleFrame 
+--> H265RtpDecoder::singleFrame
 
---> H265RtpDecoder::outputFrame 
+--> H265RtpDecoder::outputFrame
 
---> RtpCodec::inputFrame 
+--> RtpCodec::inputFrame
 
---> 会调用到FrameDispatcher里注册的_delegates_write的inputFrame(frame)，这个函数就是上面注册的`GB28181Process::onRtpDecode`
+--> 会调用到 FrameDispatcher 里注册的\_delegates_write 的 inputFrame(frame)，这个函数就是上面注册的`GB28181Process::onRtpDecode`
 
-把这个frame送走以后，需要重新_frame = obtainFrame()，初始化一个帧结构用来收帧
+把这个 frame 送走以后，需要重新\_frame = obtainFrame()，初始化一个帧结构用来收帧
 
 ### 7 GB28181Process::onRtpDecode
 
-第一次进入创建_decoder，PS流就创建PSDecoder
+第一次进入创建\_decoder，PS 流就创建 PSDecoder
 
-调用_decoder->input
+调用\_decoder->input
 
 PSDecoder::input -> HttpRequestSplitter::input -> PSDecoder::onSearchPacketTail -> ps_demuxer_input
 
 再调用到以下回调
 
-### 8 PSDecoder设置回调的方法
+### 8 PSDecoder 设置回调的方法
 
-在构造函数里，调用libmpeg的库函数ps_demuxer_create创建_ps_demuxer。在里面注册了onpacket的回调函数。这个函数会再回调PSDecoder->_on_decode。这个_on_decode是由PSDecoder::setOnDecode注册的，是在DecoderImp构造时注册的DecoderImp::onDecode
+在构造函数里，调用 libmpeg 的库函数 ps_demuxer_create 创建\_ps_demuxer。在里面注册了 onpacket 的回调函数。这个函数会再回调 PSDecoder->
+\_on_decode。这个\_on_decode 是由 PSDecoder::setOnDecode 注册的，是在 DecoderImp 构造时注册的 DecoderImp::onDecode
 
 简单表示
 
-PSDecoder::PSDecoder() 
+PSDecoder::PSDecoder()
 
 -> _ps_demuxer=ps_demuxer_create_
 
--> PSDecoder->_on_decode 
+-> PSDecoder->\_on_decode
 
--> PSDecoder::setOnDecode 
+-> PSDecoder::setOnDecode
 
--> DecoderImp::DecoderImp() 
+-> DecoderImp::DecoderImp()
 
 -> DecoderImp::onDecode
 
-同样的方法也设置了ps_demuxer的notify=DecoderImp::onStream。Notify表示同一个RTP流内部视频或音频流有变化的情况
+同样的方法也设置了 ps_demuxer 的 notify=DecoderImp::onStream。Notify 表示同一个 RTP 流内部视频或音频流有变化的情况
 
 ### 9 DecoderImp::onDecode
 
-这个是解析出一个PS packet的时候会调用的
+这个是解析出一个 PS packet 的时候会调用的
 
-如果没有这个tracks，那么调用DecoderImp::onTrack在sink里添加这个tracks
+如果没有这个 tracks，那么调用 DecoderImp::onTrack 在 sink 里添加这个 tracks
 
 FrameMerger::inputFrame 合流
 
-DecoderImp::onFrame --> _sink->inputFrame输入
+DecoderImp::onFrame --> \_sink->inputFrame 输入
 
-这个_sink就是GB28181Process中的_interface，就是RtpProcess
+这个\_sink 就是 GB28181Process 中的\_interface，就是 RtpProcess
 
 ### 10 RtpProcess::inputFrame
 
-调用_muxer->inputFrame() _ 
+调用*muxer->inputFrame() *
 
---> MediaSink::inputFrame() 里面从_track_map获取Track
+--> MediaSink::inputFrame() 里面从\_track_map 获取 Track
 
---> 默认是H264Track::inputFrame()
+--> 默认是 H264Track::inputFrame()
 
---> H264Track::inputFrame_l() 
+--> H264Track::inputFrame_l()
 
-如果SPS/PPS先保存，遇到I帧先插入SPS/PPS frame,再送后一个frame
+如果 SPS/PPS 先保存，遇到 I 帧先插入 SPS/PPS frame,再送后一个 frame
 
 --> VideoTrack/FrameDispatcher::inputFrame
 
---> FrameWriterInterfaceHelper::inputFrame去调用回调
+--> FrameWriterInterfaceHelper::inputFrame 去调用回调
 
-_-->_MediaSink.cpp:41
+\_-->\_MediaSink.cpp:41
 
-​		这个回调当前面RtpProcess里调用了addTrack时 
+​ 这个回调当前面 RtpProcess 里调用了 addTrack 时
 
-​		-->  MediaSink::addTrack
+​ --> MediaSink::addTrack
 
-​		-->  track->addDelegate 这里会注册这个回调。
+​ --> track->addDelegate 这里会注册这个回调。
 
-​		调用MultiMediaSourceMuxer::onTrackFrame
+​ 调用 MultiMediaSourceMuxer::onTrackFrame
 
-​		在MediaSink中维护了一个_frame_unread，保留了一个未读的Frame。把该帧存入_		frame_unread
+​ 在 MediaSink 中维护了一个*frame_unread，保留了一个未读的 Frame。把该帧存入* frame_unread
 
 ### 11 MultiMediaSourceMuxer::onTrackFrame
 
-调用RtpSender::inputFrame
+调用 RtpSender::inputFrame
 
-这里就开始进入send RTP流程
+这里就开始进入 send RTP 流程
 
 ## RTP send 流程
 
@@ -417,9 +416,9 @@ api_regist("/index/api/startSendRtp",[](API_ARGS_MAP_ASYNC){
                 val["msg"] = ex.what();
             }
             val["local_port"] = local_port;
-            invoker(200, headerOut, val.toStyledString()); 
+            invoker(200, headerOut, val.toStyledString());
         });
-    
+
 }
 ```
 
@@ -454,10 +453,10 @@ void MediaSourceEventInterceptor::startSendRtp(MediaSource &sender, const string
 
 ```c++
 void MultiMediaSourceMuxer::startSendRtp(MediaSource &, const string &dst_url, uint16_t dst_port, const string &ssrc, bool is_udp, uint16_t src_port, const function<void(uint16_t local_port, const SockException &ex)> &cb){
-    
+
     RtpSender::Ptr rtp_sender = std::make_shared<RtpSender>(atoi(ssrc.data()));
     weak_ptr<MultiMediaSourceMuxer> weak_self = shared_from_this();
-    
+
     // 4 从这里进RtpSender
     rtp_sender->startSend(dst_url, dst_port, is_udp, src_port, [weak_self, rtp_sender, cb, ssrc](uint16_t local_port, const SockException &ex) {
         cb(local_port, ex);
@@ -479,7 +478,7 @@ void MultiMediaSourceMuxer::startSendRtp(MediaSource &, const string &dst_url, u
 
 ```c++
 void RtpSender::startSend(const string &dst_url, uint16_t dst_port, bool is_udp, uint16_t src_port, const function<void(uint16_t local_port, const SockException &ex)> &cb){
-    
+
     _is_udp = is_udp;
     _socket = Socket::createSocket(_poller, false);
     _dst_url = dst_url;
@@ -517,25 +516,27 @@ void RtpSender::startSend(const string &dst_url, uint16_t dst_port, bool is_udp,
 }
 ```
 
-###  5 RtpSender::inputFrame 
+### 5 RtpSender::inputFrame
 
-MultiMediaSourceMuxer接收到一个Frame之后，会从MultiMediaSourceMuxer::onTrackFrame进入送帧操作
+MultiMediaSourceMuxer 接收到一个 Frame 之后，会从 MultiMediaSourceMuxer::onTrackFrame 进入送帧操作
 
 --> MpegMuxer::inputFrame
 
 --> FrameMerger::inputFrame
 
-		1. WillFlush(frame) 判断是否需要flush，只要有1帧就需要flush
-  		2. 如果_frame_cache有多帧，会把多个帧用BufferLikeString和合成1帧merged_frame
-  		3. 调用外部输入的回调，MPEG.cpp:67，调用libmpeg的库函数`mpeg_muxer_input--> ps_muxer_input()`。这个函数里会把这些frame都打上PS流的各种头，PES头是根据最大packet长度包的。
-  		4. ps_muxer_input把封装成PS流的packet送入write的回调函数。MPEG.cpp:111 。 这个回调在MpegMuxer::createContext初始化
-  		5. 调用MpegMuxer::onWrite_l --> PSEncoderImp::onWrite --> CommonRtpEncoder::inputFrame开始封装RTP流
+    	1. WillFlush(frame) 判断是否需要flush，只要有1帧就需要flush
+
+2. 如果\_frame_cache 有多帧，会把多个帧用 BufferLikeString 和合成 1 帧 merged_frame
+3. 调用外部输入的回调，MPEG.cpp:67，调用 libmpeg 的库函数`mpeg_muxer_input--> ps_muxer_input()`。这个函数里会把这些 frame 都打上 PS 流的各种头，PES 头是根据最大
+   packet 长度包的。
+4. ps_muxer_input 把封装成 PS 流的 packet 送入 write 的回调函数。MPEG.cpp:111 。 这个回调在 MpegMuxer::createContext 初始化
+5. 调用 MpegMuxer::onWrite_l --> PSEncoderImp::onWrite --> CommonRtpEncoder::inputFrame 开始封装 RTP 流
 
 ### 6 CommonRtpEncoder::inputFrame
 
-#### 6.1 封装RTP流
+#### 6.1 封装 RTP 流
 
-每个RTP包的最大size，在config.ini里面videoMtuSize=1400定义了mtu的size，
+每个 RTP 包的最大 size，在 config.ini 里面 videoMtuSize=1400 定义了 mtu 的 size，
 
 ```c++
 //返回rtp负载最大长度
@@ -545,36 +546,34 @@ size_t getMaxSize() const {
 }
 ```
 
-把packet拆解成多个mtu后，调用RtpInfo::makeRtp把raw data封装成Rtp
+把 packet 拆解成多个 mtu 后，调用 RtpInfo::makeRtp 把 raw data 封装成 Rtp
 
-mark只在一个packet拆成最后1个Rtp包的时候才打上
+mark 只在一个 packet 拆成最后 1 个 Rtp 包的时候才打上
 
 #### 6.2 发送
 
-对每个Rtp包调用RtpCodec::inputRtp
+对每个 Rtp 包调用 RtpCodec::inputRtp
 
 --> RingBuffer::write
 
 --> RingDelegateHelper::onWrite
 
---> 回调再PSEncoder.cpp:24
+--> 回调再 PSEncoder.cpp:24
 
 --> RtpCachePS::onRTP
 
 --> RtpCache::input
 
-把packet放入PacketCache._cache
+把 packet 放入 PacketCache.\_cache
 
 --> PacketCache::flushAll
 
 --> RtpCache::onFlush
 
---> 调用回调RtpSender.cpp:22
+--> 调用回调 RtpSender.cpp:22
 
 --> RtpSender::onFlushRtpList
 
-在这里用socket->write送帧
-
-
+在这里用 socket->write 送帧
 
 {% endraw %}

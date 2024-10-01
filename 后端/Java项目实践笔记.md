@@ -1,122 +1,123 @@
 {% raw %}
 
-# Java项目实践笔记
+# Java 项目实践笔记
 
-## java对象：PO/POJO/VO/BO/DAO/DTO分析
+## java 对象：PO/POJO/VO/BO/DAO/DTO 分析
 
 ### 1 PO(Persistant Object)/Entity
 
-PO(Persistant Object，持久对象)是伴随O/R映射出现的概念，因此，想要链接PO必须先了解O/R映射。
+PO(Persistant Object，持久对象)是伴随 O/R 映射出现的概念，因此，想要链接 PO 必须先了解 O/R 映射。
 
-#### 1.1 OR映射
+#### 1.1 OR 映射
 
-OR映射(ORM,Obeject Releation Mapping)就是将对象与关系数据库进行绑定（或者说是把关系数据表进行对象(javabean值对象)映射）
+OR 映射(ORM,Obeject Releation Mapping)就是将对象与关系数据库进行绑定（或者说是把关系数据表进行对象(javabean 值对象)映射）
 
-操作过程中，根据不同的ORM Framework编写不同的映射文件，一般是以xml方式进行存储，将表与Javabean的值对象一一对应。
-示例：
-以前插入一条记录书写形式为：
+操作过程中，根据不同的 ORM Framework 编写不同的映射文件，一般是以 xml 方式进行存储，将表与 Javabean 的值对象一一对应。 示例： 以前插入一条记录书写形式为：
 
 - \- 建立连接...
 - \- 建立操作对象
-- \- 执行sql
+- \- 执行 sql
 
 现在可以如下书写：
 
 - \- 读取映射配置
-- \- javabean值对象.set字段名（字段值）
-- \- save操作即可
+- \- javabean 值对象.set 字段名（字段值）
+- \- save 操作即可
 
 #### 1.2 PO
 
-PO(Persistant Object)可以看成是与数据库中的表相映射的java对象。
+PO(Persistant Object)可以看成是与数据库中的表相映射的 java 对象。
 
-最简单的PO就是对应数据库中某个表中的一条记录，多个记录可以用PO的集合。PO中应该不包含任何对数据库的操作。
+最简单的 PO 就是对应数据库中某个表中的一条记录，多个记录可以用 PO 的集合。PO 中应该不包含任何对数据库的操作。
 
 ### 2.VO(Value Object)
 
-VO值对象，通常用于业务层之间的数据传递，与PO一样仅包含数据，根据业务的需要与抽象出的业务对象实现对应或者非对应。
-VO主要**对应界面显示的数据对象**。对于一个WEB页面，或者SWT/SWING的一个界面，用一个VO对象对应整个界面的值。
+VO 值对象，通常用于业务层之间的数据传递，与 PO 一样仅包含数据，根据业务的需要与抽象出的业务对象实现对应或者非对应。 VO 主要**对应界面显示的数据对象**。对于一个 WEB 页面，或者 SWT/SWING 的一个界面，用一个 VO
+对象对应整个界面的值。
 
-VO其实表示的就是和浏览器交互的json
+VO 其实表示的就是和浏览器交互的 json
 
-#### 2.1 VO与PO异同点
+#### 2.1 VO 与 PO 异同点
 
 ##### 2.2.1 相同点
 
-VO与PO均由一组属性和属性的get和set方法组成，结构上没有不同，但是本质上完全不同。
+VO 与 PO 均由一组属性和属性的 get 和 set 方法组成，结构上没有不同，但是本质上完全不同。
 
 ##### 2.2.2 创建方法差异
 
-- VO是用new关键字创建，由GC回收。
-- PO是向数据库中添加新数据时创建，删除数据库中数据时削除。并且PO只能存活在一个数据库连接中，断开连接就被销毁。
+- VO 是用 new 关键字创建，由 GC 回收。
+- PO 是向数据库中添加新数据时创建，删除数据库中数据时削除。并且 PO 只能存活在一个数据库连接中，断开连接就被销毁。
 
 ##### 2.2.3 意义不同
 
-- VO是值对象，或者说是业务对象，是存活在业务层，是业务逻辑使用的，意义在于微数据提供一个生存的地方；
-- PO是有状态的，每个属性代表其当前的状态，他是物理数据的对象表示。使用它，可以使我们的程序与物理数据解耦，并且可以简化对象数据与物理数据之间的转换。
+- VO 是值对象，或者说是业务对象，是存活在业务层，是业务逻辑使用的，意义在于微数据提供一个生存的地方；
+- PO 是有状态的，每个属性代表其当前的状态，他是物理数据的对象表示。使用它，可以使我们的程序与物理数据解耦，并且可以简化对象数据与物理数据之间的转换。
 
 ##### 2.2.4 属性不同
 
-- VO的属性是根据当前业务的不同而不同，即，它的每一个属性都一一对应当前业务逻辑所需要的数据的名称。
-- PO属性是跟数据库表的字段一一对应的。PO对象需要实现序列化接口。
+- VO 的属性是根据当前业务的不同而不同，即，它的每一个属性都一一对应当前业务逻辑所需要的数据的名称。
+- PO 属性是跟数据库表的字段一一对应的。PO 对象需要实现序列化接口。
 
 ### 3 DAO(Data Access Object)
 
-DAO(Data Access Object数据访问对象)，用于访问数据库，通常与PO结合使用，DAO包含了**各种数据库的操作方法**，通过方法结合PO对数据库进行相关操作，夹在业务层逻辑与数据库资源中间，配合VO，提供数据库的CRUD（增删改查）操作
+DAO(Data Access Object 数据访问对象)，用于访问数据库，通常与 PO 结合使用，DAO 包含了**各种数据库的操作方法**，通过方法结合 PO 对数据库进行相关操作，夹在业务层逻辑与数据库资源中间，配合
+VO，提供数据库的 CRUD（增删改查）操作
 
 ### 4 BO(Business Object)
 
-BO（Business Object)业务对象，封装**业务逻辑**的java对象,通过**调用DAO方法**,结合PO,VO进行业务操作。这个对象可以包括一个或多个其它的对象
+BO（Business Object)业务对象，封装**业务逻辑**的 java 对象,通过**调用 DAO 方法**,结合 PO,VO 进行业务操作。这个对象可以包括一个或多个其它的对象
 
 比如一个简历，有教育经历、工作经历、 关系等等。
 
-1. 教育经历对应一个PO
-2. 工作经历对应一个PO
-3.  关系对应一个PO
-4. 建立一个对应简历的BO包含这些PO。处理业务逻辑时，我们就可以针对BO去处理
+1. 教育经历对应一个 PO
+2. 工作经历对应一个 PO
+3. 关系对应一个 PO
+4. 建立一个对应简历的 BO 包含这些 PO。处理业务逻辑时，我们就可以针对 BO 去处理
 
 ### 5 POJO((Plain Ordinary Java Objec)
 
-POJO(Plain Ordinary Java Object简单无规则java对象)是纯粹的传统意义的java对象。就是说在一些Object/Relation Mapping工具中，能够做到维护数据库表记录的persisent object完全是一个符合Java Bean规范的纯Java对象，没有增加别的属性和方法，即，最基本的Java Bean，只有属性字段及setter和getter方法！
+POJO(Plain Ordinary Java Object 简单无规则 java 对象)是纯粹的传统意义的 java 对象。就是说在一些 Object/Relation Mapping 工具中，能够做到维护数据库表记录的
+persisent object 完全是一个符合 Java Bean 规范的纯 Java 对象，没有增加别的属性和方法，即，最基本的 Java Bean，只有属性字段及 setter 和 getter 方法！
 
-- \- 一个POJO持久化以后就是PO；
-- \- 直接用它传递，传递过程中就是DTO；
-- \- 直接用来对应表示层就是VO。
+- \- 一个 POJO 持久化以后就是 PO；
+- \- 直接用它传递，传递过程中就是 DTO；
+- \- 直接用来对应表示层就是 VO。
 
 ### 6 DTO(Data Transfer Object)
 
 DTO(Data Transfer Object,数据传输对象)主要用于远程调用等需要大量传输对象的地方
 
-比如说，我们一张表有100个字段，那么对应的PO就有100个属性。但是我们界面上只要显示10个字段， 客户端用WEB service来获取数据，没有必要把整个PO对象传递到客户端， 这时我们就可以用只有这10个属性的DTO来传递结果到客户端，这样也不会暴露服务端表结构.到达客户端以后，如果用这个对象来对应界面显示，那此时它的身份就转为VO
+比如说，我们一张表有 100 个字段，那么对应的 PO 就有 100 个属性。但是我们界面上只要显示 10 个字段， 客户端用 WEB service 来获取数据，没有必要把整个 PO 对象传递到客户端， 这时我们就可以用只有这 10
+个属性的 DTO 来传递结果到客户端，这样也不会暴露服务端表结构.到达客户端以后，如果用这个对象来对应界面显示，那此时它的身份就转为 VO
 
 ### 7 应用框图
 
 ![img](../image/Java项目实践笔记/v2-bbac0456af84c9feb17b03cdd9501222_720w.jpg)
 
-### 8 阿里Java开发手册中的定义
+### 8 阿里 Java 开发手册中的定义
 
 分层领域模型规约：
 
-- DO（ Data Object）：与数据库表结构一一对应，通过DAO层向上传输数据源对象。
-- DTO（ Data Transfer Object）：数据传输对象，Service或Manager向外传输的对象。
-- BO（ Business Object）：业务对象。 由Service层输出的封装业务逻辑的对象。
-- AO（ Application Object）：应用对象。 在Web层与Service层之间抽象的复用对象模型，极为贴近展示层，复用度不高。
-- VO（ View Object）：显示层对象，通常是Web向模板渲染引擎层传输的对象。
-- POJO（ Plain Ordinary Java Object）：在本手册中， POJO专指只有setter/getter/toString的简单类，包括DO/DTO/BO/VO等。
-- Query：数据查询对象，各层接收上层的查询请求。 注意超过2个参数的查询封装，禁止使用Map类来传输。
+- DO（ Data Object）：与数据库表结构一一对应，通过 DAO 层向上传输数据源对象。
+- DTO（ Data Transfer Object）：数据传输对象，Service 或 Manager 向外传输的对象。
+- BO（ Business Object）：业务对象。 由 Service 层输出的封装业务逻辑的对象。
+- AO（ Application Object）：应用对象。 在 Web 层与 Service 层之间抽象的复用对象模型，极为贴近展示层，复用度不高。
+- VO（ View Object）：显示层对象，通常是 Web 向模板渲染引擎层传输的对象。
+- POJO（ Plain Ordinary Java Object）：在本手册中， POJO 专指只有 setter/getter/toString 的简单类，包括 DO/DTO/BO/VO 等。
+- Query：数据查询对象，各层接收上层的查询请求。 注意超过 2 个参数的查询封装，禁止使用 Map 类来传输。
 
 领域模型命名规约：
 
-- 数据对象：xxxDO，xxx即为数据表名。
-- 数据传输对象：xxxDTO，xxx为业务领域相关的名称。
-- 展示对象：xxxVO，xxx一般为网页名称。
-- POJO是DO/DTO/BO/VO的统称，禁止命名成xxxPOJO。
+- 数据对象：xxxDO，xxx 即为数据表名。
+- 数据传输对象：xxxDTO，xxx 为业务领域相关的名称。
+- 展示对象：xxxVO，xxx 一般为网页名称。
+- POJO 是 DO/DTO/BO/VO 的统称，禁止命名成 xxxPOJO。
 
-## Swagger3.0教程
+## Swagger3.0 教程
 
 http://localhost:8080/swagger-ui/index.html
 
-### 1 Pom导入
+### 1 Pom 导入
 
 ```xml
 <dependency>
@@ -210,14 +211,14 @@ public class Swagger3Config implements WebMvcConfigurer {
 
 ### 4 遇到的问题
 
-#### 4.1 SpringBoot启动错误
+#### 4.1 SpringBoot 启动错误
 
-报错Failed to start bean ‘documentationPluginsBootstrapper
+报错 Failed to start bean ‘documentationPluginsBootstrapper
 
-***原因***： 这是因为Springfox使用的路径匹配是基于AntPathMatcher的，而Spring Boot 2.6.X使用的是PathPatternMatcher。
-***解决***：在application.properties里配置：spring.mvc.pathmatch.matching-strategy=ANT_PATH_MATCHER
+**_原因_**： 这是因为 Springfox 使用的路径匹配是基于 AntPathMatcher 的，而 Spring Boot 2.6.X 使用的是 PathPatternMatcher。
+**_解决_**：在 application.properties 里配置：spring.mvc.pathmatch.matching-strategy=ANT_PATH_MATCHER
 
-#### 4.2 swagger提示No operations defined in spec
+#### 4.2 swagger 提示 No operations defined in spec
 
 ```java
 .apis(RequestHandlerSelectors.basePackage("ca.netint.warehouse"))
@@ -225,9 +226,9 @@ public class Swagger3Config implements WebMvcConfigurer {
 .apis(RequestHandlerSelectors.basePackage("ca.netint.warehouse.controller"))
 ```
 
-#### 4.3 v3/api-docs无法访问
+#### 4.3 v3/api-docs 无法访问
 
-这个接口会返回json格式文档
+这个接口会返回 json 格式文档
 
 ```java
 @Bean
@@ -241,32 +242,32 @@ public Docket createRestApi(){
 }
 ```
 
-#### 4.4 关于@EnableWebMvc注解
+#### 4.4 关于@EnableWebMvc 注解
 
 1. 用户配置了`@EnableWebMvc`
-2. Spring扫描所有的注解，再从注解上扫描到`@Import`，把这些`@Import`引入的bean信息都缓存起来
+2. Spring 扫描所有的注解，再从注解上扫描到`@Import`，把这些`@Import`引入的 bean 信息都缓存起来
 3. 在扫描到`@EnableWebMvc`时，通过`@Import`加入了 `DelegatingWebMvcConfiguration`，也就是`WebMvcConfigurationSupport`
-4. spring再处理`@Conditional`相关的注解，判断发现已有`WebMvcConfigurationSupport`，就跳过了spring bootr的`WebMvcAutoConfiguration`
+4. spring 再处理`@Conditional`相关的注解，判断发现已有`WebMvcConfigurationSupport`，就跳过了 spring bootr 的`WebMvcAutoConfiguration`
 
-所以spring boot自己的静态资源配置不生效。
+所以 spring boot 自己的静态资源配置不生效。
 
-##### Spring Boot ResourceProperties的配置
+##### Spring Boot ResourceProperties 的配置
 
-在spring boot里静态资源目录的配置是在`ResourceProperties`里。
+在 spring boot 里静态资源目录的配置是在`ResourceProperties`里。
 
-然后在 `WebMvcAutoConfigurationAdapter`里会初始始化相关的ResourceHandler。
+然后在 `WebMvcAutoConfigurationAdapter`里会初始始化相关的 ResourceHandler。
 
 [Spring 注解 @EnableWebMvc 工作原理](https://blog.csdn.net/andy_zhang2007/article/details/87357865)
 
-##  关于Log
+## 关于 Log
 
-SLF4J是底层框架，logback、log4j挂在上面
+SLF4J 是底层框架，logback、log4j 挂在上面
 
-[在IDEA的maven视图里查看包的依赖关系](https://blog.csdn.net/liumiaocn/article/details/108414583)
+[在 IDEA 的 maven 视图里查看包的依赖关系](https://blog.csdn.net/liumiaocn/article/details/108414583)
 
 log4j-over-slf4j -> slf4j-api
 
-##MyBatis注解开发
+## MyBatis 注解开发
 
 ### 常用注解
 
@@ -280,35 +281,32 @@ log4j-over-slf4j -> slf4j-api
 
 @Result：实现结果集封装
 
-@Results：可以与@Result一起使用，封装多个结果集
+@Results：可以与@Result 一起使用，封装多个结果集
 
 @One：实现一对一结果集封装
 
 @Many：实现一对多结果集封装
 
-实现复杂关系映射之前我们可以在映射文件中通过配置<resultMap>来实现，使用注解开发后，我们可以使用@Results注解，@Result注解，@One注解，@Many注解组合完成复杂关系的配置
+实现复杂关系映射之前我们可以在映射文件中通过配置<resultMap>来实现，使用注解开发后，我们可以使用@Results 注解，@Result 注解，@One 注解，@Many 注解组合完成复杂关系的配置
 
-| 注解            | 说明                                                         |
-| --------------- | ------------------------------------------------------------ |
-| @Results        | 代替的是标签<resultMap>，该注解中可以使用单个@Result注解，也可以使用@Result集合。使用格式：@Results({@Result(),@Result()})或@Results(@Result()) |
-| @Result         | 代替了<id>标签和<result>标签@Result中属性介绍：column：数据库的列名property：需要装配的属性名one：需要使用的@One注解（@Result（one=@One）（））many：需要使用的@Many注解（@Result（many=@Many）（）） |
-| @One（一对一）  | 代替了<assocation>标签，是多表查询的关键，在注解中用来指定子查询返回单一对象@One注解属性介绍：select：指定用来多表查询的sqlmapper使用格式：@Result（column=" "，property=" "，one=@One（select=" "）） |
-| @Many（多对一） | 代替了<collection>标签，是多表查询的关键，在注解中用来指定子查询返回对象集合使用格式：@Result（property=" "，column=" "，many=@Many（select=" "）） |
-
-
+| 注解            | 说明                                                                                                                                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| @Results        | 代替的是标签<resultMap>，该注解中可以使用单个@Result 注解，也可以使用@Result 集合。使用格式：@Results({@Result(),@Result()})或@Results(@Result())                                                          |
+| @Result         | 代替了<id>标签和<result>标签@Result 中属性介绍：column：数据库的列名 property：需要装配的属性名 one：需要使用的@One 注解（@Result（one=@One）（））many：需要使用的@Many 注解（@Result（many=@Many）（）） |
+| @One（一对一）  | 代替了<assocation>标签，是多表查询的关键，在注解中用来指定子查询返回单一对象@One 注解属性介绍：select：指定用来多表查询的 sqlmapper 使用格式：@Result（column=" "，property=" "，one=@One（select=" "））  |
+| @Many（多对一） | 代替了<collection>标签，是多表查询的关键，在注解中用来指定子查询返回对象集合使用格式：@Result（property=" "，column=" "，many=@Many（select=" "））                                                        |
 
 ### 1 一对一查询
 
 #### 1.1 一对一查询模型
 
-户表和订单表的关系为，一个用户有多个订单，一个订单只从属于一个用户
-一对一查询的需求：查询一个订单，与此同时查询出该订单所属的用户。从order -> user
+户表和订单表的关系为，一个用户有多个订单，一个订单只从属于一个用户 一对一查询的需求：查询一个订单，与此同时查询出该订单所属的用户。从 order -> user
 
 ![img](../image/Java项目实践笔记/2367892-20210719212948757-691917321.png)
 
-####  1.2一对一查询的sql语句
+#### 1.2 一对一查询的 sql 语句
 
-sql语句：
+sql 语句：
 
 ```sql
 select * from orders;
@@ -377,9 +375,9 @@ public void findOrderAll() {
 
 #### 2.1 一对多模型
 
-从user -> order。查询一个用户下所有orders
+从 user -> order。查询一个用户下所有 orders
 
-#### 2.2 SQL语句
+#### 2.2 SQL 语句
 
 ```sql
 select * from user;
@@ -458,7 +456,7 @@ public void findUserAndOrderAll(){
 
 ![img](../image/Java项目实践笔记/2367892-20210720103316243-207413902.png)
 
-#### 3.2 SQL语句
+#### 3.2 SQL 语句
 
 ```sql
 select * from user;
@@ -526,11 +524,9 @@ public void findUserAndRoleALl(){
 }
 ```
 
-
-
 ## MySQL 使用
 
-### 如何定义mysql函数
+### 如何定义 mysql 函数
 
 ```sql
 DROP PROCEDURE IF EXISTS insert_permission; -- 这句一定要加，否则每个connection，函数只能定义一次
@@ -538,15 +534,15 @@ DELIMITER $  -- 只是用来定义一个结束符号
 create procedure insert_permission()	-- 定义函数
 begin
     declare a1 int default 31;
-    while a1<= 40 do	
-		insert into warehouse.auth_permission(name,content_type_id,codename) 
-			select concat('Can add ',model) as name, id as content_type_id, concat('add_',model) as codename 
+    while a1<= 40 do
+		insert into warehouse.auth_permission(name,content_type_id,codename)
+			select concat('Can add ',model) as name, id as content_type_id, concat('add_',model) as codename
 				from warehouse.django_content_type where id = a1;
-		insert into warehouse.auth_permission(name,content_type_id,codename) 
-			select concat('Can change ',model) as name, id as content_type_id, concat('change_',model) as codename 
+		insert into warehouse.auth_permission(name,content_type_id,codename)
+			select concat('Can change ',model) as name, id as content_type_id, concat('change_',model) as codename
 				from warehouse.django_content_type where id = a1;
-		insert into warehouse.auth_permission(name,content_type_id,codename) 
-			select concat('Can retrieve ',model) as name, id as content_type_id, concat('retrieve_',model) as codename 
+		insert into warehouse.auth_permission(name,content_type_id,codename)
+			select concat('Can retrieve ',model) as name, id as content_type_id, concat('retrieve_',model) as codename
 				from warehouse.django_content_type where id = a1;
         set a1 = a1+1;
     end while;
@@ -555,10 +551,8 @@ call insert_permission();
 
 ```
 
-使用insert into select 从一个表获取数据给另一个表添加
+使用 insert into select 从一个表获取数据给另一个表添加
 
-使用concat处理select来的数据
-
-
+使用 concat 处理 select 来的数据
 
 {% endraw %}

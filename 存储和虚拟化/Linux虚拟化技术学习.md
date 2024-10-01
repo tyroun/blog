@@ -10,42 +10,44 @@ QEMU 内核态 -> QEMU 用户态 -> QEMU 内核态
 
 # Virtio
 
-virtio需要在guest里面运行virtio driver。这个驱动和QEMU虚拟的设备进行数据交互，因为这个驱动知道自己操作的是虚拟设备，所以在真正的 I/O 路径上规避了大量可能导致陷入&陷出的 mmio/pio 操作，从而提高了性能。
+virtio 需要在 guest 里面运行 virtio driver。这个驱动和 QEMU 虚拟的设备进行数据交互，因为这个驱动知道自己操作的是虚拟设备，所以在真正的 I/O 路径上规避了大量可能导致陷入&陷出的 mmio/pio
+操作，从而提高了性能。
 
 本质上是一套基于共享内存 + 环形队列的通信机制。核心数据结构（split virtqueue）包括：两个 ringbuffer (avail ring, used ring) 和一个 descriptor table。
 
-通过eventfd机制，和宿主机上的virtio backend通讯
+通过 eventfd 机制，和宿主机上的 virtio backend 通讯
 
 <img src="https://img-blog.csdnimg.cn/img_convert/2273f9e312d6446d12d9a5eecd1bbffa.png" alt="2273f9e312d6446d12d9a5eecd1bbffa.png" style="zoom:0%;" />
 
 # Vhost
 
-数据收发部分直接offload到宿主机的一个内核线程。这样 virtio 通信机制从原本的 QEMU 用户态 I/O 线程和虚机驱动（QEMU 用户态 vcpu 线程）通信变成了 vhost 内核 I/O 线程和虚机驱动（QEMU 用户态 vcpu 线程）通信
+数据收发部分直接 offload 到宿主机的一个内核线程。这样 virtio 通信机制从原本的 QEMU 用户态 I/O 线程和虚机驱动（QEMU 用户态 vcpu 线程）通信变成了 vhost 内核 I/O 线程和虚机驱动（QEMU
+用户态 vcpu 线程）通信
 
 ![861bf60db99a50e87028730e7acf1770.png](https://img-blog.csdnimg.cn/img_convert/861bf60db99a50e87028730e7acf1770.png)
 
 # VFIO
 
-VFIO通过硬件IOMMU和EPT的支持，直接把硬件设备透传进了虚拟机。guest的驱动可以通过映射后的地址安全地访问设备。
+VFIO 通过硬件 IOMMU 和 EPT 的支持，直接把硬件设备透传进了虚拟机。guest 的驱动可以通过映射后的地址安全地访问设备。
 
-Intel CPU在处理器级别加入了对内存虚拟化的支持。即扩展页表EPT。guest的物理地址到host物理地址的转换。
+Intel CPU 在处理器级别加入了对内存虚拟化的支持。即扩展页表 EPT。guest 的物理地址到 host 物理地址的转换。
 
-[EPT详细说明](https://www.cnblogs.com/ck1020/p/6043054.html)
+[EPT 详细说明](https://www.cnblogs.com/ck1020/p/6043054.html)
 
 ![VFIO图](https://img-blog.csdnimg.cn/img_convert/e1b483b9d487ea8081f1aac5e3ca9ca5.png "VFIO 架构")
 
 # Vhost-user
 
-VFIO因为有特定的IO地址映射，无法做热迁移。所以vhost-user 提出了一种新的方式，即将 virtio 设备的数据面 offload 到另一个专用进程来处理
+VFIO 因为有特定的 IO 地址映射，无法做热迁移。所以 vhost-user 提出了一种新的方式，即将 virtio 设备的数据面 offload 到另一个专用进程来处理
 
 ![6261c6e131b50419f5625475428742f5.png](https://img-blog.csdnimg.cn/img_convert/6261c6e131b50419f5625475428742f5.png)
 
 # VFIO-mdev
 
-为了支持一个物理设备对应多个虚拟设备，但是该物理设备又不支持SRIOV的情况。
+为了支持一个物理设备对应多个虚拟设备，但是该物理设备又不支持 SRIOV 的情况。
 
-内核实现了一个虚拟设备（Mediated device）总线驱动模型，并在 VFIO 内核框架上进行了扩展，增加了对 mdev 这类虚拟设备的支持（mdev bus driver），可以从 mdev 设备驱动定义的虚拟设备接口来透传设备。这样，比如，当需要将一个 PCI 设备的 bar 空间作为资源切分的话，通过实现合适的 mdev 设备驱动，就可以将 bar 空间以 4KB（页面大小）为粒度，分别透传给不同虚机使用。
-
+内核实现了一个虚拟设备（Mediated device）总线驱动模型，并在 VFIO 内核框架上进行了扩展，增加了对 mdev 这类虚拟设备的支持（mdev bus driver），可以从 mdev
+设备驱动定义的虚拟设备接口来透传设备。这样，比如，当需要将一个 PCI 设备的 bar 空间作为资源切分的话，通过实现合适的 mdev 设备驱动，就可以将 bar 空间以 4KB（页面大小）为粒度，分别透传给不同虚机使用。
 
 ![96233416a17ad7590866112b9eb8778e.png](https://img-blog.csdnimg.cn/img_convert/96233416a17ad7590866112b9eb8778e.png)
 

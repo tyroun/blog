@@ -1,12 +1,10 @@
 {% raw %}
 
-# JS基础
+# JS 基础
 
 https://github.com/sisterAn/blog
 
-
-
-## 五 JS函数相关操作
+## 五 JS 函数相关操作
 
 ### 5.1 Function.prototype.call()
 
@@ -24,7 +22,7 @@ func.call(thisArg, arg1, arg2, ...)
 
 ```js
 func(1, 2, 3);
-func.call(obj, 1, 2, 3)
+func.call(obj, 1, 2, 3);
 ```
 
 他们都调用的是 `func`，参数是 `1`，`2` 和 `3`。
@@ -39,17 +37,17 @@ func.call(obj, 1, 2, 3)
 
 ```js
 function sayWord() {
-  var talk = [this.name, 'say', this.word].join(' ');
-  console.log(talk);
+    var talk = [this.name, "say", this.word].join(" ");
+    console.log(talk);
 }
 
 var bottle = {
-  name: 'bottle', 
-  word: 'hello'
+    name: "bottle",
+    word: "hello",
 };
 
 // 使用 call 将 bottle 传递为 sayWord 的 this
-sayWord.call(bottle); 
+sayWord.call(bottle);
 // bottle say hello
 ```
 
@@ -59,13 +57,14 @@ sayWord.call(bottle);
 
 ```js
 // 非严格模式下
-var bottle = 'bottle'
-function say(){
-   // 注意：非严格模式下，this 为 window
-   console.log('name is %s',this.bottle)
+var bottle = "bottle";
+
+function say() {
+    // 注意：非严格模式下，this 为 window
+    console.log("name is %s", this.bottle);
 }
 
-say.call()
+say.call();
 // name is bottle
 ```
 
@@ -73,14 +72,15 @@ say.call()
 
 ```js
 // 严格模式下
-'use strict'
-var bottle = 'bottle'
-function say(){
-   // 注意：在严格模式下 this 为 undefined
-   console.log('name is %s',this.bottle)
+"use strict";
+var bottle = "bottle";
+
+function say() {
+    // 注意：在严格模式下 this 为 undefined
+    console.log("name is %s", this.bottle);
 }
 
-say.call()
+say.call();
 // Uncaught TypeError: Cannot read property 'bottle' of undefined
 ```
 
@@ -94,25 +94,27 @@ say.call()
 
 ```js
 // 父类
-function SuperType (name) {
-  this.name = name; // 父类属性
+function SuperType(name) {
+    this.name = name; // 父类属性
 }
-SuperType.prototype.sayName = function () { // 父类原型方法
-  return this.name;
+
+SuperType.prototype.sayName = function () {
+    // 父类原型方法
+    return this.name;
 };
 
 // 子类
-function SubType () {
-  // 调用 SuperType 构造函数
-  // 在子类构造函数中，向父类构造函数传参
-  SuperType.call(this, 'SuperType'); 
-  // 为了保证子父类的构造函数不会重写子类的属性，需要在调用父类构造函数后，定义子类的属性
-  this.subName = "SubType"; 
-  // 子类属性
-};
+function SubType() {
+    // 调用 SuperType 构造函数
+    // 在子类构造函数中，向父类构造函数传参
+    SuperType.call(this, "SuperType");
+    // 为了保证子父类的构造函数不会重写子类的属性，需要在调用父类构造函数后，定义子类的属性
+    this.subName = "SubType";
+    // 子类属性
+}
 
 // 子类实例
-let instance = new SubType(); 
+let instance = new SubType();
 // 运行子类构造函数，并在子类构造函数中运行父类构造函数，this绑定到子类
 ```
 
@@ -120,19 +122,19 @@ let instance = new SubType();
 
 ```js
 var bottle = [
-  {name: 'an', age: '24'},
-  {name: 'anGe', age: '12'}
+    {name: "an", age: "24"},
+    {name: "anGe", age: "12"},
 ];
 
 for (var i = 0; i < bottle.length; i++) {
-  // 匿名函数
-  (function (i) { 
-    setTimeout(() => {
-      // this 指向了 bottle[i]
-      console.log('#' + i  + ' ' + this.name + ': ' + this.age); 
-    }, 1000)
-  }).call(bottle[i], i);
-  // 调用 call 方法，同时解决了 var 作用域问题
+    // 匿名函数
+    (function (i) {
+        setTimeout(() => {
+            // this 指向了 bottle[i]
+            console.log("#" + i + " " + this.name + ": " + this.age);
+        }, 1000);
+    }).call(bottle[i], i);
+    // 调用 call 方法，同时解决了 var 作用域问题
 }
 ```
 
@@ -150,7 +152,7 @@ for (var i = 0; i < bottle.length; i++) {
 `apply()` 方法调用一个具有给定 `this` 值的函数，以及作为一个数组（或[类似数组对象）提供的参数。
 
 ```js
-func.apply(thisArg, [argsArray])
+func.apply(thisArg, [argsArray]);
 ```
 
 它运行 `func` 设置 `this = context` 并使用类数组对象 `args` 作为参数列表。
@@ -159,12 +161,12 @@ func.apply(thisArg, [argsArray])
 
 ```js
 func(1, 2, 3);
-func.apply(context, [1, 2, 3])
+func.apply(context, [1, 2, 3]);
 ```
 
 两个都运行 `func` 给定的参数是 `1,2,3`。但是 `apply` 也设置了 `this = context`。
 
-***`call` 和 `apply` 之间唯一的语法区别是 `call` 接受一个参数列表***，而 `apply` 则接受带有一个类数组对象。
+**_`call` 和 `apply` 之间唯一的语法区别是 `call` 接受一个参数列表_**，而 `apply` 则接受带有一个类数组对象。
 
 需要注意：Chrome 14 以及 Internet Explorer 9 仍然不接受类数组对象。如果传入类数组对象，它们会抛出异常。
 
@@ -178,7 +180,7 @@ func.apply(context, [1, 2, 3])
 let args = [1, 2, 3];
 
 func.call(context, ...args); // 使用 spread 运算符将数组作为参数列表传递
-func.apply(context, args);   // 与使用 call 相同
+func.apply(context, args); // 与使用 call 相同
 ```
 
 如果我们仔细观察，那么 `call` 和 `apply` 的使用会有一些细微的差别。
@@ -191,8 +193,8 @@ func.apply(context, args);   // 与使用 call 相同
 `apply` 最重要的用途之一是将调用传递给另一个函数，如下所示：
 
 ```js
-let wrapper = function() {
-  return anotherFunction.apply(this, arguments);
+let wrapper = function () {
+    return anotherFunction.apply(this, arguments);
 };
 ```
 
@@ -205,10 +207,10 @@ let wrapper = function() {
 `array.push.apply` 将数组添加到另一数组上：
 
 ```js
-var array = ['a', 'b']
-var elements = [0, 1, 2]
-array.push.apply(array, elements)
-console.info(array) // ["a", "b", 0, 1, 2]
+var array = ["a", "b"];
+var elements = [0, 1, 2];
+array.push.apply(array, elements);
+console.info(array); // ["a", "b", 0, 1, 2]
 ```
 
 #### 4. apply 来链接构造器
@@ -225,17 +227,17 @@ Function.prototype.constructor = function (aArgs) {
 
 ```js
 /* 找出数组中最大/小的数字 */
-let numbers = [5, 6, 2, 3, 7]
+let numbers = [5, 6, 2, 3, 7];
 /* 应用(apply) Math.min/Math.max 内置函数完成 */
 
-let max = Math.max.apply(null, numbers) 
+let max = Math.max.apply(null, numbers);
 /* 基本等同于 Math.max(numbers[0], ...) 或 Math.max(5, 6, ..) */
 
-let min = Math.min.apply(null, numbers)
+let min = Math.min.apply(null, numbers);
 
-console.log('max: ', max)
+console.log("max: ", max);
 // max: 7
-console.log('min: ', min)
+console.log("min: ", min);
 // min: 2
 ```
 
@@ -243,18 +245,17 @@ console.log('min: ', min)
 
 ```js
 /* 代码对比： 用简单循环完成 */
-let numbers = [5, 6, 2, 3, 7]
-let max = -Infinity, min = +Infinity
+let numbers = [5, 6, 2, 3, 7];
+let max = -Infinity,
+    min = +Infinity;
 for (var i = 0; i < numbers.length; i++) {
-  if (numbers[i] > max)
-    max = numbers[i]
-  if (numbers[i] < min) 
-    min = numbers[i]
+    if (numbers[i] > max) max = numbers[i];
+    if (numbers[i] < min) min = numbers[i];
 }
 
-console.log('max: ', max)
+console.log("max: ", max);
 // max: 7
-console.log('min: ', min)
+console.log("min: ", min);
 // min: 2
 ```
 
@@ -264,16 +265,17 @@ console.log('min: ', min)
 
 ```js
 function minOfArray(arr) {
-  var min = Infinity
-  var QUANTUM = 32768 // JavaScript 核心中已经做了硬编码  参数个数限制在65536
+    var min = Infinity;
+    var QUANTUM = 32768; // JavaScript 核心中已经做了硬编码  参数个数限制在65536
 
-  for (var i = 0, len = arr.length; i < len; i += QUANTUM) {
-    var submin = Math.min.apply(null, arr.slice(i, Math.min(i + QUANTUM, len)))
-    min = Math.min(submin, min)
-  }
-  return min
+    for (var i = 0, len = arr.length; i < len; i += QUANTUM) {
+        var submin = Math.min.apply(null, arr.slice(i, Math.min(i + QUANTUM, len)));
+        min = Math.min(submin, min);
+    }
+    return min;
 }
-var min = minOfArray([5, 6, 2, 3, 7])
+
+var min = minOfArray([5, 6, 2, 3, 7]);
 // max 同样也是如此
 ```
 
@@ -285,19 +287,19 @@ JavaScript 新手经常犯的一个错误是将一个方法从对象中拿出来
 
 ```js
 let bottle = {
-  nickname: "bottle",
-  sayHello() {
-    console.log(`Hello, ${this.nickname}!`)
-  },
-  sayHi(){
-    setTimeout(function(){
-      console.log('Hello, ', this.nickname) //this指向window，因为setTimeout
-    }, 1000)
-  }
+    nickname: "bottle",
+    sayHello() {
+        console.log(`Hello, ${this.nickname}!`);
+    },
+    sayHi() {
+        setTimeout(function () {
+            console.log("Hello, ", this.nickname); //this指向window，因为setTimeout
+        }, 1000);
+    },
 };
 
 // 问题一
-bottle.sayHi(); 
+bottle.sayHi();
 // Hello, undefined!
 
 // 问题二
@@ -314,7 +316,7 @@ setTimeout(bottle.sayHello, 1000); //sayHello只是作为回调，this和bottle�
 ```js
 // 在这种情况下，this 指向全局作用域
 let func = bottle.sayHello;
-setTimeout(func, 1000); 
+setTimeout(func, 1000);
 // 用户上下文丢失
 // 浏览器上，访问的实际上是 Window 上下文
 ```
@@ -327,16 +329,16 @@ setTimeout(func, 1000);
 
 ```js
 let bottle = {
-  nickname: "bottle",
-  sayHello() {
-    console.log(`Hello, ${this.nickname}!`)
-  },
-  sayHi(){
-    var _this = this // 缓存this
-    setTimeout(function(){
-      console.log('Hello, ', _this.nickname)
-    }, 1000)
-  }
+    nickname: "bottle",
+    sayHello() {
+        console.log(`Hello, ${this.nickname}!`);
+    },
+    sayHi() {
+        var _this = this; // 缓存this
+        setTimeout(function () {
+            console.log("Hello, ", _this.nickname);
+        }, 1000);
+    },
 };
 
 bottle.sayHi();
@@ -347,16 +349,16 @@ bottle.sayHi();
 
 ```js
 let bottle = {
-  nickname: "bottle",
-  sayHello() {
-    console.log(`Hello, ${this.nickname}!`);
-  }
+    nickname: "bottle",
+    sayHello() {
+        console.log(`Hello, ${this.nickname}!`);
+    },
 };
 
 // 加一个包装层
 setTimeout(() => {
-  bottle.sayHello()
-}, 1000); 
+    bottle.sayHello();
+}, 1000);
 // Hello, bottle!
 ```
 
@@ -364,22 +366,22 @@ setTimeout(() => {
 
 ```js
 var bottle = {
-  nickname: "bottle",
-  sayHello() {
-    console.log(`Hello, ${this.nickname}!`);
-  }
+    nickname: "bottle",
+    sayHello() {
+        console.log(`Hello, ${this.nickname}!`);
+    },
 };
 
 setTimeout(() => {
-  bottle.sayHello()
-}, 1000); 
+    bottle.sayHello();
+}, 1000);
 
 // 更新 bottle
 bottle = {
-  nickname: "haha",
-  sayHello() {
-    console.log(`Hi, ${this.nickname}!`)
-  }
+    nickname: "haha",
+    sayHello() {
+        console.log(`Hi, ${this.nickname}!`);
+    },
 };
 // Hi, haha!
 ```
@@ -388,25 +390,25 @@ bottle = {
 
 **解决方案二： bind**
 
-`bind()` 最简单的用法是创建一个新绑定函数，当这个新绑定函数被调用时，`this` 键值为其提供的值，其参数列表前几项值为创建时指定的参数序列，绑定函数与被调函数具有相同的函数体（ES5中）。
+`bind()` 最简单的用法是创建一个新绑定函数，当这个新绑定函数被调用时，`this` 键值为其提供的值，其参数列表前几项值为创建时指定的参数序列，绑定函数与被调函数具有相同的函数体（ES5 中）。
 
 ```js
 let bottle = {
-  nickname: "bottle",
-  sayHello() {
-    console.log(`Hello, ${this.nickname}!`);
-  }
+    nickname: "bottle",
+    sayHello() {
+        console.log(`Hello, ${this.nickname}!`);
+    },
 };
 
 // 未绑定，“this” 指向全局作用域
-let sayHello = bottle.sayHello
-console.log(sayHello())
+let sayHello = bottle.sayHello;
+console.log(sayHello());
 // Hello, undefined!
 
 // 绑定
-let bindSayHello = sayHello.bind(bottle)
+let bindSayHello = sayHello.bind(bottle);
 // 创建一个新函数，将 this 绑定到 bottle 对象
-console.log(bindSayHello())
+console.log(bindSayHello());
 // Hello, bottle!
 ```
 
@@ -414,43 +416,46 @@ console.log(bindSayHello())
 
 ```js
 let bottle = {
-  nickname: "bottle",
-  sayHello() {
-    console.log(`Hello, ${this.nickname}!`);
-  },
-  sayHi(){
-    // 使用 bind
-    setTimeout(function(){
-      console.log('Hello, ', this.nickname)
-    }.bind(this), 1000)
-    
-    // 或箭头函数
-    setTimeout(() => {
-      console.log('Hello, ', this.nickname)
-    }, 1000)
-  }
+    nickname: "bottle",
+    sayHello() {
+        console.log(`Hello, ${this.nickname}!`);
+    },
+    sayHi() {
+        // 使用 bind
+        setTimeout(
+            function () {
+                console.log("Hello, ", this.nickname);
+            }.bind(this),
+            1000
+        );
+
+        // 或箭头函数
+        setTimeout(() => {
+            console.log("Hello, ", this.nickname);
+        }, 1000);
+    },
 };
 
 // 问题一：完美解决
-bottle.sayHi()
+bottle.sayHi();
 // Hello,  bottle
 // Hello,  bottle
 
 let sayHello = bottle.sayHello.bind(bottle); // (*)
 
-sayHello(); 
+sayHello();
 // Hello, bottle!
 
 // 问题二：完美解决
-setTimeout(sayHello, 1000); 
+setTimeout(sayHello, 1000);
 // Hello, bottle!
 
 // 更新 bottle
 bottle = {
-  nickname: "haha",
-  sayHello() {
-    console.log(`Hi, ${this.nickname}!`)
-  }
+    nickname: "haha",
+    sayHello() {
+        console.log(`Hi, ${this.nickname}!`);
+    },
 };
 ```
 
@@ -463,19 +468,20 @@ bottle = {
 再看一个例子：
 
 ```js
-this.nickname = 'window'
+this.nickname = "window";
 let bottle = {
-  nickname: 'bottle'
-}
+    nickname: "bottle",
+};
+
 function sayHello() {
-  console.log('Hello, ', this.nickname)
+    console.log("Hello, ", this.nickname);
 }
 
-let bindBottle = sayHello.bind(bottle) // this 指向 bottle
-console.log(bindBottle()) 
+let bindBottle = sayHello.bind(bottle); // this 指向 bottle
+console.log(bindBottle());
 // Hello,  bottle
 
-console.log(new bindBottle())  // this 指向 sayHello {}
+console.log(new bindBottle()); // this 指向 sayHello {}
 // Hello,  undefined
 ```
 
@@ -487,10 +493,10 @@ console.log(new bindBottle())  // this 指向 sayHello {}
 
 ```js
 function sayHello() {
-  console.log('Hello, ', this.nickname)
+    console.log("Hello, ", this.nickname);
 }
 
-sayHello = sayHello.bind( {nickname: "Bottle"} ).bind( {nickname: "AnGe" } );
+sayHello = sayHello.bind({nickname: "Bottle"}).bind({nickname: "AnGe"});
 sayHello();
 // Hello,  Bottle
 ```
@@ -521,21 +527,22 @@ var list3 = leadingThirtysevenList(1, 2, 3); // [37, 1, 2, 3]
 
 ```js
 function Bottle(nickname) {
-  this.nickname = nickname;
+    this.nickname = nickname;
 }
-Bottle.prototype.sayHello = function() { 
-  console.log('Hello, ', this.nickname)
+
+Bottle.prototype.sayHello = function () {
+    console.log("Hello, ", this.nickname);
 };
 
-let bottle = new Bottle('bottle');
-let BindBottle = Bottle.bind(null, 'bindBottle');
+let bottle = new Bottle("bottle");
+let BindBottle = Bottle.bind(null, "bindBottle");
 
-let b1 = new BindBottle('b1');
+let b1 = new BindBottle("b1");
 b1 instanceof Bottle; // true
 b1 instanceof BindBottle; // true
-new Bottle('bottle1') instanceof BindBottle; // true
+new Bottle("bottle1") instanceof BindBottle; // true
 
-b1.sayHello() 
+b1.sayHello();
 // Hello,  bindBottle 绑定的还是bind时候指明的对象
 ```
 
@@ -544,10 +551,10 @@ b1.sayHello()
 在计算机科学中，柯里化（Currying）是把接受多个参数的函数变换成接受一个单一参数(最初函数的第一个参数)的函数，并且返回接受余下的参数且返回结果的新函数的技术。这个技术由 Christopher Strachey 以逻辑学家 Haskell Curry 命名的，尽管它是 Moses Schnfinkel 和 Gottlob Frege 发明的。
 
 ```js
-var add = function(x) {
-  return function(y) {
-    return x + y;
-  };
+var add = function (x) {
+    return function (y) {
+        return x + y;
+    };
 };
 
 var increment = add(1);
@@ -573,20 +580,20 @@ add(1)(2);
 
 ```js
 let bottle = {
-  nickname: "bottle",
-  sayHi(){
-    setTimeout(function(){
-      console.log('Hello, ', this.nickname)
-    }, 1000)
-    
-    // 或箭头函数
-    setTimeout(() => {
-      console.log('Hi, ', this.nickname)
-    }, 1000)
-  }
+    nickname: "bottle",
+    sayHi() {
+        setTimeout(function () {
+            console.log("Hello, ", this.nickname);
+        }, 1000);
+
+        // 或箭头函数
+        setTimeout(() => {
+            console.log("Hi, ", this.nickname);
+        }, 1000);
+    },
 };
 
-bottle.sayHi()
+bottle.sayHi();
 // Hello,  undefined
 // Hi,  bottle
 ```
@@ -616,13 +623,13 @@ bottle.sayHi()
 
 ```js
 function defer(f, ms) {
-  return function() {
-    setTimeout(() => f.apply(this, arguments), ms)
-  };
+    return function () {
+        setTimeout(() => f.apply(this, arguments), ms);
+    };
 }
 
 function sayHi(who) {
-  alert('Hello, ' + who);
+    alert("Hello, " + who);
 }
 
 let sayHiDeferred = defer(sayHi, 2000);
@@ -633,10 +640,10 @@ sayHiDeferred("John"); // 2 秒后打印 Hello, John
 
 ```js
 function defer(f, ms) {
-  return function(...args) {
-    let ctx = this;
-    setTimeout(function() {
-      return f.apply(ctx, args);
+    return function (...args) {
+        let ctx = this;
+        setTimeout(function () {
+            return f.apply(ctx, args);
     }, ms);
   };
 }
@@ -650,7 +657,5 @@ function defer(f, ms) {
 - **不可 new 实例化**
 - this 不可变
 - **没有 arguments 对象**
-
-
 
 {% endraw %}

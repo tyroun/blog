@@ -1,16 +1,14 @@
 {% raw %}
 
-# React全家桶视频笔记
+# React 全家桶视频笔记
 
 ## UmiJS
 
-package.json里以@开头的，都是umijs的插件
+package.json 里以@开头的，都是 umijs 的插件
 
 点官网插件找怎么用
 
 ### 常用配置
-
-
 
 ```js
 //定义主题颜色
@@ -20,19 +18,17 @@ threme:{
 hash:{ } //给build出的结果，每个文件加个后缀
 ```
 
-
-
 ### 路由
 
-WebStorm快捷键 - RCC/RSC 生成class/函数 组件
+WebStorm 快捷键 - RCC/RSC 生成 class/函数 组件
 
-@符号表示从项目的src路径寻找
+@符号表示从项目的 src 路径寻找
 
-routes配置，可以用于配置layouts
+routes 配置，可以用于配置 layouts
 
-wrapper用来加入权限路由
+wrapper 用来加入权限路由
 
-title给页面加标题
+title 给页面加标题
 
 路由参数添加 `:id`
 
@@ -47,7 +43,7 @@ routes:[
 ]
 ```
 
-不写route的话，就会走约定式路由，识别page/layouts下得文件
+不写 route 的话，就会走约定式路由，识别 page/layouts 下得文件
 
 ### 页面跳转
 
@@ -66,23 +62,23 @@ history.push('/user/one');  //命令式
 props.history.push('/user/one');  //命令式2
 ```
 
-### HTML模板
+### HTML 模板
 
-node_modules/@umijs/core/document.ejs  默认的id=root的div在这里
+node_modules/@umijs/core/document.ejs 默认的 id=root 的 div 在这里
 
 #### 修改默认模板
 
 新建 `src/pages/document.ejs`，umi 约定如果这个文件存在，会作为默认模板
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Your App</title>
+    <meta charset="utf-8"/>
+    <title>Your App</title>
 </head>
 <body>
-  <div id="root"></div>
+<div id="root"></div>
 </body>
 </html>
 ```
@@ -105,18 +101,18 @@ Umi 约定 `/mock` 文件夹下所有文件为 mock 文件。
 如果 `/mock/api.ts` 的内容如下，
 
 ```js
-export default {  
-// 支持值为 Object 和 Array  
-'GET /api/users': { users: [1, 2] },
-// GET 可忽略  
-'/api/users/1': { id: 1 },
-// 支持自定义函数，API 参考 express@4  
- 'POST /api/users/create': (req, res) => {    
-     // 添加跨域请求头    
-     res.setHeader('Access-Control-Allow-Origin', '*');   
-     res.end('ok');  
- },
-}
+export default {
+    // 支持值为 Object 和 Array
+    "GET /api/users": {users: [1, 2]},
+    // GET 可忽略
+    "/api/users/1": {id: 1},
+    // 支持自定义函数，API 参考 express@4
+    "POST /api/users/create": (req, res) => {
+        // 添加跨域请求头
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.end("ok");
+    },
+};
 ```
 
 #### 配置 Mock
@@ -142,22 +138,23 @@ $ MOCK=none umi dev
 比如：
 
 ```js
-import mockjs from 'mockjs';
-export default {  
-    // 使用 mockjs 等三方库  
-    'GET /api/tags': mockjs.mock({    
-        'list|100': [{ name: '@city', 'value|1-100': 50, 'type|0-2': 1 }],  
+import mockjs from "mockjs";
+
+export default {
+    // 使用 mockjs 等三方库
+    "GET /api/tags": mockjs.mock({
+        "list|100": [{name: "@city", "value|1-100": 50, "type|0-2": 1}],
     }),
 };
 ```
 
-### 整合Dva
+### 整合 Dva
 
 文档在这里 https://umijs.org/zh-CN/plugins/plugin-dva
 
-1. 创建UI组件
-2. 创建model
-3. 连接UI和model
+1. 创建 UI 组件
+2. 创建 model
+3. 连接 UI 和 model
 
 有没有有效的 dva model，可通过执行 `umi dva list model` 检查，或者执行 `umi g tmp` 后查看 `src/.umi/plugin-dva/dva.ts` 中检查 model 注册情况
 
@@ -177,23 +174,23 @@ export default {
 
 约定 `src/app.tsx` 为运行时配置。
 
-#### patchRoutes({ routes }) 
+#### patchRoutes({ routes })
 
 修改路由。
 
 比如在最前面添加一个 `/foo` 路由，
 
 ```js
-export function patchRoutes({ routes }) {
-  routes.unshift({
-    path: '/foo',
-    exact: true,  //严格匹配模式
-    component: require('@/extraRoutes/foo').default,
-  });
+export function patchRoutes({routes}) {
+    routes.unshift({
+        path: "/foo",
+        exact: true, //严格匹配模式
+        component: require("@/extraRoutes/foo").default,
+    });
 }
 ```
 
- `render` 配置配合使用，请求服务端根据响应动态更新路由，**根据权限返回路由**
+`render` 配置配合使用，请求服务端根据响应动态更新路由，**根据权限返回路由**
 
 #### render(oldRender: Function) - 权限路由校验
 
@@ -204,33 +201,34 @@ export function patchRoutes({ routes }) {
 ```js
 let extraRoutes;
 
-export function patchRoutes({ routes }) {  
+export function patchRoutes({routes}) {
     merge(routes, extraRoutes);
 }
 
 //获取路由
-export function render(oldRender) {  
+export function render(oldRender) {
     //模拟后端
     extraRoutes = [
         {path: "/server",component=“/user2" }
     ]
     //真得问后端要
-    fetch('/api/routes').then(res=>res.json()).then((res) => {
-        extraRoutes = res.routes;    
+    fetch('/api/routes').then(res => res.json()).then((res) => {
+        extraRoutes = res.routes;
         oldRender();  //负责渲染
     })
 }
 
 //渲染之前做权限校验
-export function render(oldRender) {
-  fetch('/api/auth').then(auth => {
-    if (auth.isLogin) { oldRender() }
-    else { 
-      history.push('/login'); 
-      oldRender()
+    export function render(oldRender) {
+        fetch('/api/auth').then(auth => {
+            if (auth.isLogin) {
+                oldRender()
+            } else {
+                history.push('/login');
+                oldRender()
+            }
+        });
     }
-  });
-}
 ```
 
 #### onRouteChange({ routes, matchedRoutes, location, action }) - 埋点统计
@@ -249,20 +247,16 @@ export function onRouteChange({ location, routes, action }) {
 
 ```js
 export function onRouteChange({ matchedRoutes }) {
-  if (matchedRoutes.length) {
-    document.title = matchedRoutes[matchedRoutes.length - 1].route.title || '';
-  }
+    if (matchedRoutes.length) {
+        document.title = matchedRoutes[matchedRoutes.length - 1].route.title || "";
+    }
 }
 ```
 
+### 使用 Umi UI
 
+添加区块，只能在 src/下的 page
 
-### 使用Umi UI
-
-添加区块，只能在src/下的page
-
-dva添加需要配置
-
-
+dva 添加需要配置
 
 {% endraw %}

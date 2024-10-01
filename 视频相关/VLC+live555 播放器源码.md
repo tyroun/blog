@@ -14,25 +14,25 @@ static int  Open ( vlc_object_t *p_this ){
     p_demux->pf_demux  = Demux;
     p_demux->pf_control= Control;
     p_demux->p_sys     = p_sys = (demux_sys_t*)calloc( 1, sizeof( demux_sys_t ) );
-    
+
     //创建live555用的基本的调度器，最终这个调度器来实现select然后回调
     if( ( p_sys->scheduler = BasicTaskScheduler::createNew() ) == NULL )
     {
         msg_Err( p_demux, "BasicTaskScheduler::createNew failed" );
         goto error;
     }
-    
+
     //打开sdp
     if( ( i_return = SessionsSetup( p_demux ) ) != VLC_SUCCESS )
     {
         msg_Err( p_demux, "Nothing to play for %s", p_sys->psz_pl_url );
         goto error;
     }
-    
+
     //播放
     if( ( i_return = Play( p_demux ) ) != VLC_SUCCESS )
             goto error;
-}       
+}
 ```
 
 ### 2 SessionSetup
@@ -47,7 +47,7 @@ static int SessionsSetup( demux_t *p_demux ){
             p_sys->env->getResultMsg() );
         return VLC_EGENERIC;
     }
-    
+
     /* 每个v=xxx会创建一个subsession,遍历*/
     iter = new MediaSubsessionIterator( *p_sys->ms );
     while( ( sub = iter->next() ) != NULL )
@@ -65,7 +65,7 @@ static int SessionsSetup( demux_t *p_demux ){
             /* Increase the RTP reorder timebuffer just a bit */
             sub->rtpSource()->setPacketReorderingThresholdTime(thresh);
         }
-        
+
     }
 }
 ```
@@ -84,7 +84,7 @@ static int Demux( demux_t *p_demux )
         if( tk->waiting == 0 )
         {
             tk->waiting = 1;
-            //live555 会在这里注册taskScheduler的回调 StreamRead/StreamClose 
+            //live555 会在这里注册taskScheduler的回调 StreamRead/StreamClose
             tk->sub->readSource()->getNextFrame( tk->p_buffer, tk->i_buffer,
                                           StreamRead, tk, StreamClose, tk );
         }
@@ -98,11 +98,9 @@ static int Demux( demux_t *p_demux )
     /* remove the task */
     p_sys->scheduler->unscheduleDelayedTask( task );
     //这里的scheduler是BasicTaskScheduler::createNew创建的
-    
+
 }
 ```
-
-
 
 ## live555 调用流程
 
@@ -123,13 +121,13 @@ BasicTaskScheduler::BasicTaskScheduler(unsigned maxSchedulerGranularity)
   FD_ZERO(&fExceptionSet);
 
   //调用scheduleDelayedTask，会把一个超时的任务放到fDelayQueue里，select的时候会根据queue里指示的delay值，设置delay时间
-  if (maxSchedulerGranularity > 0) schedulerTickTask(); 
+  if (maxSchedulerGranularity > 0) schedulerTickTask();
 }
 
 //上面的子类调用了基类BasicTaskScheduler0的默认构造函数
 BasicTaskScheduler0::BasicTaskScheduler0()
   : fLastHandledSocketNum(-1), fTriggersAwaitingHandling(0), fLastUsedTriggerMask(1), fLastUsedTriggerNum(MAX_NUM_EVENT_TRIGGERS-1) {
-  //fHandlers维护了1个双向链表，用于存放socket号，还有回调。这些信息统一放在HandlerDescriptor中    
+  //fHandlers维护了1个双向链表，用于存放socket号，还有回调。这些信息统一放在HandlerDescriptor中
   fHandlers = new HandlerSet;
   for (unsigned i = 0; i < MAX_NUM_EVENT_TRIGGERS; ++i) {
     fTriggeredEventHandlers[i] = NULL;
@@ -141,14 +139,15 @@ BasicTaskScheduler0::BasicTaskScheduler0()
 
 #### 1.2 回调触发
 
-有2种方式
+有 2 种方式
 
-1. 是调用BasicTaskScheduler::setBackgroundHandling，在fHandlers中注册回调，绑定socket号。在SingleStep时根据触发的socket号，调用回调
-2. 调用BasicTaskScheduler0::createEventTrigger，注册回调并且申请EventTriggerId。调用BasicTaskScheduler0::triggerEvent表示该回调即将被触发，置位fTriggersAwaitingHandling。在SingleStep中，每次select返回后，调用fTriggersAwaitingHandling被置位的回调
+1. 是调用 BasicTaskScheduler::setBackgroundHandling，在 fHandlers 中注册回调，绑定 socket 号。在 SingleStep 时根据触发的 socket 号，调用回调
+2. 调用 BasicTaskScheduler0::createEventTrigger，注册回调并且申请 EventTriggerId。调用 BasicTaskScheduler0::triggerEvent 表示该回调即将被触发，置位
+   fTriggersAwaitingHandling。在 SingleStep 中，每次 select 返回后，调用 fTriggersAwaitingHandling 被置位的回调
 
 #### 1.2 调度器启动
 
-最终都是调用BasicTaskScheduler::SingleStep
+最终都是调用 BasicTaskScheduler::SingleStep
 
 ```c++
 void BasicTaskScheduler0::doEventLoop(char volatile* watchVariable) {
@@ -261,27 +260,27 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
 }
 ```
 
-### 2 RTP数据处理流程
+### 2 RTP 数据处理流程
 
 #### 2.1 MediaSubsession::initiate
 
-主要做了2件事，创建SimpleRTPSource +  创建RTCPInstance
+主要做了 2 件事，创建 SimpleRTPSource + 创建 RTCPInstance
 
-MediaSession.cpp	
+MediaSession.cpp
 
 ```c++
 Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
     //找到一对socket用于rtp和rtcp
     fRTPSocket = new Groupsock(env(), tempAddr, 0, 255);
-    
+
     //收帧buffer
     increaseReceiveBufferTo(env(), fRTPSocket->socketNum(), rtpBufSize);
-    
+
     //根据sdp中的a=rtpmap:96 MP2P/90000来创建不同的source
     // Create "fRTPSource" and "fReadSource":
     // MP2P是调用SimpleRTPSource
     if (!createSourceObjects(useSpecialRTPoffset)) break;
-    
+
     //创建rtcp instance
     fRTCPInstance = RTCPInstance::createNew(env(), fRTCPSocket,
 					      totSessionBandwidth,
@@ -289,23 +288,24 @@ Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
 					      fParent.CNAME(),
 					      NULL /* we're a client */,
 					      fRTPSource);
-    
+
 }
 ```
 
-#### 2.2 MediaSubsession:: createSourceObjects 创建source
+#### 2.2 MediaSubsession:: createSourceObjects 创建 source
 
-根据sdp，选择了SimpleRTPSource ::createNew
+根据 sdp，选择了 SimpleRTPSource ::createNew
 
 SimpleRTPSource --> MultiFramedRTPSource --> RTPSource --> FramedSource --> MediaSouce --> Medium
 
-#### 2.3 RTP接收数据流程
+#### 2.3 RTP 接收数据流程
 
 vlc/Demux() -> FramedSource::getNextFrame -> MultiFramedRTPSource::doGetNextFrame
 
-​	|-> RTPInterface::startNetworkReading 挂载回调
+​ |-> RTPInterface::startNetworkReading 挂载回调
 
-eventloop select之后 -> MultiFramedRTPSource::networkReadHandler1() -> MultiFramedRTPSource::doGetNextFrame1() -> afterGetting() -> vlc/StreamRead()
+eventloop select 之后 -> MultiFramedRTPSource::networkReadHandler1() -> MultiFramedRTPSource::doGetNextFrame1() ->
+afterGetting() -> vlc/StreamRead()
 
 ```C++
 //对外的接口，用于设置读完一帧的回调。VLC在Demux中调用了这个接口
@@ -350,7 +350,7 @@ void RTPInterface::startNetworkReading(TaskScheduler::BackgroundHandlerProc* han
   envir().taskScheduler().turnOnBackgroundReadHandling(fGS->socketNum(), handlerProc, fOwner);
 
   // Also, receive RTP over TCP, on each of our TCP connections:
-  // 对于RTP over RTSP的，注册另一个socket的回调  
+  // 对于RTP over RTSP的，注册另一个socket的回调
   fReadHandlerProc = handlerProc;
   for (tcpStreamRecord* streams = fTCPStreams; streams != NULL;
        streams = streams->fNext) {
@@ -367,7 +367,7 @@ void MultiFramedRTPSource::networkReadHandler1() {
   BufferedPacket* bPacket = fPacketReadInProgress;
   if (bPacket == NULL) {
     // Normal case: Get a free BufferedPacket descriptor to hold the new network packet:
-    // 从fReorderingBuffer里获取一个空的packet  
+    // 从fReorderingBuffer里获取一个空的packet
     bPacket = fReorderingBuffer->getFreePacket(this);
   }
 
@@ -376,7 +376,7 @@ void MultiFramedRTPSource::networkReadHandler1() {
   do {
     struct sockaddr_in fromAddress;
     Boolean packetReadWasIncomplete = fPacketReadInProgress != NULL;
-    // 调用rtpInterface.handleRead -> recvFrom来读取原始数据到bPacket 
+    // 调用rtpInterface.handleRead -> recvFrom来读取原始数据到bPacket
     if (!bPacket->fillInData(fRTPInterface, fromAddress, packetReadWasIncomplete)) {
       ...
     }
@@ -426,14 +426,14 @@ void MultiFramedRTPSource::networkReadHandler1() {
     bPacket->assignMiscParams(rtpSeqNo, rtpTimestamp, presentationTime,
 			      hasBeenSyncedUsingRTCP, rtpMarkerBit,
 			      timeNow);
-    // 根据seq number排序保存packet  
+    // 根据seq number排序保存packet
     if (!fReorderingBuffer->storePacket(bPacket)) break;
 
     readSuccess = True;
   } while (0);
   if (!readSuccess) fReorderingBuffer->freePacket(bPacket);
 
-  //因为一般情况下fNeedDelivery在这里不会=true，所以只是进一下下面那个函数  
+  //因为一般情况下fNeedDelivery在这里不会=true，所以只是进一下下面那个函数
   doGetNextFrame1();
   // If we didn't get proper data this time, we'll get another chance
 }
@@ -463,7 +463,7 @@ void MultiFramedRTPSource::doGetNextFrame1() {
 
     // The packet is usable. Deliver all or part of it to our caller:
     unsigned frameSize;
-    // 通过memcpy，把收到的packet放到fTo里  
+    // 通过memcpy，把收到的packet放到fTo里
     nextPacket->use(fTo, fMaxSize, frameSize, fNumTruncatedBytes,
 		    fCurPacketRTPSeqNum, fCurPacketRTPTimestamp,
 		    fPresentationTime, fCurPacketHasBeenSynchronizedUsingRTCP,
@@ -503,7 +503,7 @@ void MultiFramedRTPSource::doGetNextFrame1() {
 }
 ```
 
-#### 2.4 创建RTCPInstance
+#### 2.4 创建 RTCPInstance
 
 ```C++
 RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
@@ -544,7 +544,7 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
   if (fSource != NULL && fSource->RTPgs() == RTCPgs) {
     // We're receiving RTCP reports that are multiplexed with RTP, so ask the RTP source
     // to give them to us:
-    // 在这里对SimpleRTPSouce注册了fRTCPInstanceForMultiplexedRTCPPackets = rtcpInstance;  
+    // 在这里对SimpleRTPSouce注册了fRTCPInstanceForMultiplexedRTCPPackets = rtcpInstance;
     fSource->registerForMultiplexedRTCPPackets(this);
   } else {
     // Arrange to handle incoming reports from the network:
@@ -559,12 +559,6 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
 }
 ```
 
-### 
-
-
-
-
-
-
+###
 
 {% endraw %}

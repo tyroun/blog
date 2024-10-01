@@ -1,14 +1,14 @@
 {% raw %}
 
-# 廖雪峰Java教程
+# 廖雪峰 Java 教程
 
-## 1 Web开发基础
+## 1 Web 开发基础
 
 ### 1.1 Servlet
 
-Servlet是JavaEE定义的一套接口规范
+Servlet 是 JavaEE 定义的一套接口规范
 
-JavaEE提供了Servlet API，我们使用Servlet API编写自己的Servlet来处理HTTP请求，Web服务器实现Servlet API接口，实现底层功能：
+JavaEE 提供了 Servlet API，我们使用 Servlet API 编写自己的 Servlet 来处理 HTTP 请求，Web 服务器实现 Servlet API 接口，实现底层功能：
 
 ```scheme
                  ┌───────────┐
@@ -20,11 +20,11 @@ JavaEE提供了Servlet API，我们使用Servlet API编写自己的Servlet来处
 └───────┘        └───────────┘
 ```
 
-通过Maven打包编译出war(Java Web Application Archive)文件
+通过 Maven 打包编译出 war(Java Web Application Archive)文件
 
-运行时，先运行Tomcat, Tomcat中的main函数运行，最后调用到自定义的Servlet接口
+运行时，先运行 Tomcat, Tomcat 中的 main 函数运行，最后调用到自定义的 Servlet 接口
 
-一点简单的Servlet例子
+一点简单的 Servlet 例子
 
 ```java
 // WebServlet注解表示这是一个Servlet，并映射到地址/:
@@ -44,15 +44,15 @@ public class HelloServlet extends HttpServlet {
 }
 ```
 
-### 1.2 MVC开发
+### 1.2 MVC 开发
 
-#### 1 先定义一些JavaBean的类
+#### 1 先定义一些 JavaBean 的类
 
-JavaBeam是一种实体类，类中只有私有成员变量，和外部读写的函数
+JavaBeam 是一种实体类，类中只有私有成员变量，和外部读写的函数
 
-#### 2 定义controller类
+#### 2 定义 controller 类
 
-该类的接口只需要返回Model和View给MVC框架即可
+该类的接口只需要返回 Model 和 View 给 MVC 框架即可
 
 ```java
 public class UserController {
@@ -73,7 +73,7 @@ public class UserController {
 }
 ```
 
-#### 3 设计MVC框架
+#### 3 设计 MVC 框架
 
 框架架构如下
 
@@ -95,30 +95,30 @@ public class UserController {
                  └────────────────────┘
 ```
 
-DispatcherServlet用于接收Servlet并分发给不同的controller
+DispatcherServlet 用于接收 Servlet 并分发给不同的 controller
 
-render用于渲染，需要调用模板引擎ViewEngine。常用的有以下几种
+render 用于渲染，需要调用模板引擎 ViewEngine。常用的有以下几种
 
 - [Thymeleaf](https://www.thymeleaf.org/)
 - [FreeMarker](https://freemarker.apache.org/)
 - [Velocity](https://velocity.apache.org/)
 
-## 2 Spring开发
+## 2 Spring 开发
 
-### 2.1 IoC容器
+### 2.1 IoC 容器
 
-Tomcat就是一个Servlet容器，它可以为Servlet的运行提供运行环境。类似Docker这样的软件也是一个容器，它提供了必要的Linux环境以便运行一个特定的Linux进程
+Tomcat 就是一个 Servlet 容器，它可以为 Servlet 的运行提供运行环境。类似 Docker 这样的软件也是一个容器，它提供了必要的 Linux 环境以便运行一个特定的 Linux 进程
 
-Spring的核心就是提供了一个IoC容器，它可以管理所有轻量级的JavaBean组件，提供的底层服务包括组件的生命周期管理、配置和组装服务、AOP支持，以及建立在AOP基础上的声明式事务服务等
+Spring 的核心就是提供了一个 IoC 容器，它可以管理所有轻量级的 JavaBean 组件，提供的底层服务包括组件的生命周期管理、配置和组装服务、AOP 支持，以及建立在 AOP 基础上的声明式事务服务等
 
-#### 2.1.1 IoC原理
+#### 2.1.1 IoC 原理
 
-IoC全称Inversion of Control，直译为控制反转，就是**依赖注入**
+IoC 全称 Inversion of Control，直译为控制反转，就是**依赖注入**
 
-把如下的类改成依赖注入方式，由IoC容器决定内部实例的生命周期
+把如下的类改成依赖注入方式，由 IoC 容器决定内部实例的生命周期
 
 ```java
-public class BookService { 
+public class BookService {
     private DataSource dataSource = new HikariDataSource(config);
     public Book getBook(long bookId) {
 			...
@@ -133,7 +133,7 @@ public class BookService {
 }
 ```
 
-如何告诉IoC容器怎么创建组件和依赖关系，最简单的方法是通过xml配置
+如何告诉 IoC 容器怎么创建组件和依赖关系，最简单的方法是通过 xml 配置
 
 ```xml
 <beans>
@@ -147,11 +147,11 @@ public class BookService {
 </beans>
 ```
 
-在Spring的IoC容器中，我们把所有组件统称为JavaBean，即配置一个组件就是配置一个Bean。
+在 Spring 的 IoC 容器中，我们把所有组件统称为 JavaBean，即配置一个组件就是配置一个 Bean。
 
 依赖注入可以通过设置属性注入，也可以直接在构造函数时初始化注入
 
-#### 2.1.2 使用xml注入Bean
+#### 2.1.2 使用 xml 注入 Bean
 
 ```java
 public class UserService {
@@ -163,7 +163,7 @@ public class UserService {
 }
 ```
 
-注入配置在resource/application.xml
+注入配置在 resource/application.xml
 
 ```xml
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -177,7 +177,7 @@ public class UserService {
 </beans>
 ```
 
-如果注入的不是Bean，而是`boolean`、`int`、`String`这样的数据类型，则通过`value`注入
+如果注入的不是 Bean，而是`boolean`、`int`、`String`这样的数据类型，则通过`value`注入
 
 ```xml
 <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
@@ -189,13 +189,13 @@ public class UserService {
 </bean>
 ```
 
-最后一步，我们需要创建一个Spring的IoC容器实例，然后加载配置文件，让Spring容器为我们创建并装配好配置文件中指定的所有Bean，这只需要一行代码：
+最后一步，我们需要创建一个 Spring 的 IoC 容器实例，然后加载配置文件，让 Spring 容器为我们创建并装配好配置文件中指定的所有 Bean，这只需要一行代码：
 
 ```java
 ApplicationContext context = new ClassPathXmlApplicationContext("application.xml");
 ```
 
-接下来，我们就可以从Spring容器中“取出”装配好的Bean然后使用它：
+接下来，我们就可以从 Spring 容器中“取出”装配好的 Bean 然后使用它：
 
 ```java
 // 获取Bean:
@@ -245,11 +245,11 @@ public class AppConfig {
 }
 ```
 
-#### 2.1.4 定制Bean注入
+#### 2.1.4 定制 Bean 注入
 
 ##### Scope
 
-对于Spring容器来说，当我们把一个Bean标记为`@Component`后，它就会自动为我们创建一个单例（Singleton）。如果想每次都返回一个新的实例，用Prototype
+对于 Spring 容器来说，当我们把一个 Bean 标记为`@Component`后，它就会自动为我们创建一个单例（Singleton）。如果想每次都返回一个新的实例，用 Prototype
 
 ```java
 @Component
@@ -259,7 +259,7 @@ public class MailSession {
 }
 ```
 
-##### 注入List
+##### 注入 List
 
 ```java
 //接口
@@ -302,7 +302,7 @@ public class Validators {
 
 ##### 可选注入
 
-默认情况下，当我们标记了一个`@Autowired`后，Spring如果没有找到对应类型的Bean，它会抛出`NoSuchBeanDefinitionException`异常。
+默认情况下，当我们标记了一个`@Autowired`后，Spring 如果没有找到对应类型的 Bean，它会抛出`NoSuchBeanDefinitionException`异常。
 
 可以给`@Autowired`增加一个`required = false`的参数：
 
@@ -315,9 +315,9 @@ public class MailService {
 }
 ```
 
-##### 创建第三方Bean
+##### 创建第三方 Bean
 
-如果一个Bean不在我们自己的package管理之内, 在`@Configuration`类中编写一个Java方法创建并返回它，注意给方法标记一个`@Bean`注解：
+如果一个 Bean 不在我们自己的 package 管理之内, 在`@Configuration`类中编写一个 Java 方法创建并返回它，注意给方法标记一个`@Bean`注解：
 
 ```java
 @Configuration
@@ -333,9 +333,9 @@ public class AppConfig {
 
 ##### 初始化和销毁
 
-有些时候，一个Bean在注入必要的依赖后，需要进行初始化（监听消息等）。在容器关闭时，有时候还需要清理资源（关闭连接池等）。我们通常会定义一个`init()`方法进行初始化，定义一个`shutdown()`方法进行清理
+有些时候，一个 Bean 在注入必要的依赖后，需要进行初始化（监听消息等）。在容器关闭时，有时候还需要清理资源（关闭连接池等）。我们通常会定义一个`init()`方法进行初始化，定义一个`shutdown()`方法进行清理
 
-引入JSR-250定义的Annotation：
+引入 JSR-250 定义的 Annotation：
 
 ```xml
 <dependency>
@@ -345,7 +345,7 @@ public class AppConfig {
 </dependency>
 ```
 
-在Bean的初始化和清理方法上标记`@PostConstruct`和`@PreDestroy`：
+在 Bean 的初始化和清理方法上标记`@PostConstruct`和`@PreDestroy`：
 
 ```java
 @Component
@@ -367,7 +367,7 @@ public class MailService {
 
 ##### 使用别名
 
-一种类型的Bean创建多个实例
+一种类型的 Bean 创建多个实例
 
 ```java
 @Configuration
@@ -387,9 +387,9 @@ public class AppConfig {
 }
 ```
 
-##### 使用FactoryBean
+##### 使用 FactoryBean
 
-用工厂模式创建Bean需要实现`FactoryBean`接口。我们观察下面的代码：
+用工厂模式创建 Bean 需要实现`FactoryBean`接口。我们观察下面的代码：
 
 ```java
 @Component
@@ -409,13 +409,14 @@ public class ZoneIdFactoryBean implements FactoryBean<ZoneId> {
 }
 ```
 
-当一个Bean实现了`FactoryBean`接口后，Spring会先实例化这个工厂，然后调用`getObject()`创建真正的Bean。`getObjectType()`可以指定创建的Bean的类型，因为指定类型不一定与实际类型一致，可以是接口或抽象类
+当一个 Bean 实现了`FactoryBean`接口后，Spring 会先实例化这个工厂，然后调用`getObject()`创建真正的 Bean。`getObjectType()`可以指定创建的 Bean
+的类型，因为指定类型不一定与实际类型一致，可以是接口或抽象类
 
-#### 2.1.5 使用Resource
+#### 2.1.5 使用 Resource
 
-使用Spring容器时，我们可以把“文件”注入进来，方便程序读取
+使用 Spring 容器时，我们可以把“文件”注入进来，方便程序读取
 
-Spring提供了一个`org.springframework.core.io.Resource`（注意不是`javax.annotation.Resource`），它可以像`String`、`int`一样使用`@Value`注入：
+Spring 提供了一个`org.springframework.core.io.Resource`（注意不是`javax.annotation.Resource`），它可以像`String`、`int`一样使用`@Value`注入：
 
 ```java
 @Component
@@ -439,7 +440,7 @@ public class AppService {
 
 在开发应用程序时，经常需要读取配置文件。最常用的配置方法是以`key=value`的形式写在`.properties`文件中。
 
-Spring容器还提供了一个更简单的`@PropertySource`来自动读取配置文件。我们只需要在`@Configuration`配置类上再添加一个注解：
+Spring 容器还提供了一个更简单的`@PropertySource`来自动读取配置文件。我们只需要在`@Configuration`配置类上再添加一个注解：
 
 ```java
 @Configuration
@@ -456,12 +457,12 @@ public class AppConfig {
 }
 ```
 
-Spring容器看到`@PropertySource("app.properties")`注解后，自动读取这个配置文件，然后，我们使用`@Value`正常注入
+Spring 容器看到`@PropertySource("app.properties")`注解后，自动读取这个配置文件，然后，我们使用`@Value`正常注入
 
 注意注入的字符串语法，它的格式如下：
 
-- `"${app.zone}"`表示读取key为`app.zone`的value，如果key不存在，启动将报错；
-- `"${app.zone:Z}"`表示读取key为`app.zone`的value，但如果key不存在，就使用默认值`Z`。
+- `"${app.zone}"`表示读取 key 为`app.zone`的 value，如果 key 不存在，启动将报错；
+- `"${app.zone:Z}"`表示读取 key 为`app.zone`的 value，但如果 key 不存在，就使用默认值`Z`。
 
 这样一来，我们就可以根据`app.zone`的配置来创建`ZoneId`。
 
@@ -474,7 +475,7 @@ ZoneId createZoneId(@Value("${app.zone:Z}") String zoneId) {
 }
 ```
 
-另一种注入配置的方式是先通过一个简单的JavaBean持有所有的配置，例如，一个`SmtpConfig`：
+另一种注入配置的方式是先通过一个简单的 JavaBean 持有所有的配置，例如，一个`SmtpConfig`：
 
 ```java
 @Component
@@ -510,9 +511,9 @@ public class MailService {
 
 #### 2.1.7 条件注入
 
-##### 使用profile
+##### 使用 profile
 
-创建某个Bean时，Spring容器可以根据注解`@Profile`来决定是否创建。例如，以下配置：
+创建某个 Bean 时，Spring 容器可以根据注解`@Profile`来决定是否创建。例如，以下配置：
 
 ```java
 @Configuration
@@ -532,9 +533,9 @@ public class AppConfig {
 }
 ```
 
-在运行程序时，加上JVM参数`-Dspring.profiles.active=test`就可以指定以`test`环境启动。
+在运行程序时，加上 JVM 参数`-Dspring.profiles.active=test`就可以指定以`test`环境启动。
 
-实际上，Spring允许指定多个Profile，例如：
+实际上，Spring 允许指定多个 Profile，例如：
 
 ```shell
 -Dspring.profiles.active=test,master
@@ -542,7 +543,7 @@ public class AppConfig {
 
 可以表示`test`环境，并使用`master`分支代码。
 
-要满足多个Profile条件，可以这样写：
+要满足多个 Profile 条件，可以这样写：
 
 ```java
 @Bean
@@ -552,9 +553,9 @@ ZoneId createZoneId() {
 }
 ```
 
-##### 使用Conditional
+##### 使用 Conditional
 
-除了根据`@Profile`条件来决定是否创建某个Bean外，Spring还可以根据`@Conditional`决定是否创建某个Bean。
+除了根据`@Profile`条件来决定是否创建某个 Bean 外，Spring 还可以根据`@Conditional`决定是否创建某个 Bean。
 
 例如，我们对`SmtpMailService`添加如下注解：
 
@@ -566,7 +567,7 @@ public class SmtpMailService implements MailService {
 }
 ```
 
-它的意思是，如果满足`OnSmtpEnvCondition`的条件，才会创建`SmtpMailService`这个Bean。`OnSmtpEnvCondition`的条件是什么呢？我们看一下代码：
+它的意思是，如果满足`OnSmtpEnvCondition`的条件，才会创建`SmtpMailService`这个 Bean。`OnSmtpEnvCondition`的条件是什么呢？我们看一下代码：
 
 ```java
 public class OnSmtpEnvCondition implements Condition {
@@ -576,23 +577,23 @@ public class OnSmtpEnvCondition implements Condition {
 }
 ```
 
-### 2.2 使用AOP
+### 2.2 使用 AOP
 
-AOP是Aspect Oriented Programming，即面向切面编程
+AOP 是 Aspect Oriented Programming，即面向切面编程
 
-如果有一些业务逻辑，不同的类都需要调用。就可以看出一个Aspect。框架可以通过proxy的模式把这些逻辑加入类中
+如果有一些业务逻辑，不同的类都需要调用。就可以看出一个 Aspect。框架可以通过 proxy 的模式把这些逻辑加入类中
 
-在Java平台上，对于AOP的织入，有3种方式：
+在 Java 平台上，对于 AOP 的织入，有 3 种方式：
 
-1. 编译期：在编译时，由编译器把切面调用编译进字节码，这种方式需要定义新的关键字并扩展编译器，AspectJ就扩展了Java编译器，使用关键字aspect来实现织入；
-2. 类加载器：在目标类被装载到JVM时，通过一个特殊的类加载器，对目标类的字节码重新“增强”；
-3. 运行期：目标对象和切面都是普通Java类，通过JVM的动态代理功能或者第三方库实现运行期动态织入。
+1. 编译期：在编译时，由编译器把切面调用编译进字节码，这种方式需要定义新的关键字并扩展编译器，AspectJ 就扩展了 Java 编译器，使用关键字 aspect 来实现织入；
+2. 类加载器：在目标类被装载到 JVM 时，通过一个特殊的类加载器，对目标类的字节码重新“增强”；
+3. 运行期：目标对象和切面都是普通 Java 类，通过 JVM 的动态代理功能或者第三方库实现运行期动态织入。
 
-Spring的AOP实现就是基于JVM的动态代理
+Spring 的 AOP 实现就是基于 JVM 的动态代理
 
-#### 2.2.1 使用AOP
+#### 2.2.1 使用 AOP
 
-1. 通过Maven引入Spring对AOP的支持
+1. 通过 Maven 引入 Spring 对 AOP 的支持
 
    ```xml
    <dependency>
@@ -613,7 +614,7 @@ Spring的AOP实现就是基于JVM的动态代理
        public void doAccessCheck() {
            System.err.println("[Before] do access check...");
        }
-   
+
        // 在执行MailService的每个方法前后执行:
        @Around("execution(public * xxx.MailService.*(..))")
        public Object doLogging(ProceedingJoinPoint pjp) throws Throwable {
@@ -643,13 +644,13 @@ Spring的AOP实现就是基于JVM的动态代理
 
 - @Before：这种拦截器先执行拦截代码，再执行目标代码。如果拦截器抛异常，那么目标代码就不执行了；
 - @After：这种拦截器先执行目标代码，再执行拦截器代码。无论目标代码是否抛异常，拦截器代码都会执行；
-- @AfterReturning：和@After不同的是，只有当目标代码正常返回时，才执行拦截器代码；
-- @AfterThrowing：和@After不同的是，只有当目标代码抛出了异常时，才执行拦截器代码；
+- @AfterReturning：和@After 不同的是，只有当目标代码正常返回时，才执行拦截器代码；
+- @AfterThrowing：和@After 不同的是，只有当目标代码抛出了异常时，才执行拦截器代码；
 - @Around：能完全控制目标代码是否执行，并可以在执行前后、抛异常后执行任意拦截代码，可以说是包含了上面所有功能。
 
-#### 2.2.2 使用注解装配AOP
+#### 2.2.2 使用注解装配 AOP
 
-用AOP时，被装配的Bean最好自己能清清楚楚地知道自己被安排了
+用 AOP 时，被装配的 Bean 最好自己能清清楚楚地知道自己被安排了
 
 1. 定义一个性能监控的注解
 
@@ -699,28 +700,28 @@ Spring的AOP实现就是基于JVM的动态代理
 
 ### 2.3 访问数据库
 
-#### 2.3.1 使用JDBC
+#### 2.3.1 使用 JDBC
 
-Java程序使用JDBC接口访问关系数据库的时候，需要以下几步：
+Java 程序使用 JDBC 接口访问关系数据库的时候，需要以下几步：
 
 - 创建全局`DataSource`实例，表示数据库连接池；
 - 在需要读写数据库的方法内部，按如下步骤访问数据库：
   - 从全局`DataSource`实例获取`Connection`实例；
   - 通过`Connection`实例创建`PreparedStatement`实例；
-  - 执行SQL语句，如果是查询，则通过`ResultSet`读取结果集，如果是修改，则获得`int`结果。
+  - 执行 SQL 语句，如果是查询，则通过`ResultSet`读取结果集，如果是修改，则获得`int`结果。
 
-正确编写JDBC代码的关键是使用`try ... finally`释放资源，涉及到事务的代码需要正确提交或回滚事务。
+正确编写 JDBC 代码的关键是使用`try ... finally`释放资源，涉及到事务的代码需要正确提交或回滚事务。
 
-***使用步骤***
+**_使用步骤_**
 
-1. 创建并管理DataSource
-2. 实例化JdbcTemplate
+1. 创建并管理 DataSource
+2. 实例化 JdbcTemplate
 
 ```java
 @Configuration
 @ComponentScan
 //通过@PropertySource("jdbc.properties")读取数据库配置文件
-@PropertySource("jdbc.properties") 
+@PropertySource("jdbc.properties")
 public class AppConfig {
 
     //通过@Value("${jdbc.url}")注入配置文件的相关配置；
@@ -776,18 +777,18 @@ public class DatabaseInitializer {
 }
 ```
 
-4. JBDCTemplate在Service中使用
+4. JBDCTemplate 在 Service 中使用
 
-`用法1` T execute(ConnectionCallback<T> action)方法 
+`用法1` T execute(ConnectionCallback<T> action)方法
 
-提供了Jdbc的Connection供我们使用
+提供了 Jdbc 的 Connection 供我们使用
 
 ```java
 @Component
 public class UserService {
     @Autowired
     JdbcTemplate jdbcTemplate;
-        
+
     public User getUserById(long id) {
         // 注意传入的是ConnectionCallback:
         return jdbcTemplate.execute((Connection conn) -> {
@@ -808,7 +809,7 @@ public class UserService {
             }
         });
     }
-    
+
 }
 ```
 
@@ -834,7 +835,7 @@ public User getUserByName(String name) {
 }
 ```
 
-`用法3`  
+`用法3`
 
 T queryForObject(String sql, Object[] args, RowMapper<T> rowMapper)方法
 
@@ -853,9 +854,9 @@ public User getUserByEmail(String email) {
 }
 ```
 
-rowMapper是个匿名函数，queryForObject()会自动生成ps，并调用ps.excute执行sql语句，执行完以后返回rs和rowNum作为输入，调用rowMapper这个匿名函数
+rowMapper 是个匿名函数，queryForObject()会自动生成 ps，并调用 ps.excute 执行 sql 语句，执行完以后返回 rs 和 rowNum 作为输入，调用 rowMapper 这个匿名函数
 
-Spring也提供了BeanPropertyRowMapper这样的函数，可以直接按列名把record转成JavaBean
+Spring 也提供了 BeanPropertyRowMapper 这样的函数，可以直接按列名把 record 转成 JavaBean
 
 #### 2.3.2 使用声明式事务
 
@@ -880,11 +881,12 @@ try {
 
 ##### 使用方法
 
-如果要在Spring中操作事务，没必要手写JDBC事务，可以使用Spring提供的高级接口来操作事务。Spring提供了一个`PlatformTransactionManager`来表示事务管理器，所有的事务都由它负责管理。而事务由`TransactionStatus`表示。
+如果要在 Spring 中操作事务，没必要手写 JDBC 事务，可以使用 Spring 提供的高级接口来操作事务。Spring 提供了一个`PlatformTransactionManager`
+来表示事务管理器，所有的事务都由它负责管理。而事务由`TransactionStatus`表示。
 
-Spring同时支持JDBC和分布式事务JTA(Java Transaction API)两种事务模型
+Spring 同时支持 JDBC 和分布式事务 JTA(Java Transaction API)两种事务模型
 
-可以在Config里面定义Bean
+可以在 Config 里面定义 Bean
 
 ```java
 @Configuration
@@ -989,11 +991,11 @@ public class UserService {
 }
 ```
 
-以上情况有好几种策略，成为***事务传播级别***
+以上情况有好几种策略，成为**_事务传播级别_**
 
-默认是`REQUIRED` ： 表示多个事务合成1个事务
+默认是`REQUIRED` ： 表示多个事务合成 1 个事务
 
-`SUPPORTS`：表示如果有事务，就加入到当前事务，如果没有，那也不开启事务执行。这种传播级别可用于查询方法，因为SELECT语句既可以在事务内执行，也可以不需要事务；
+`SUPPORTS`：表示如果有事务，就加入到当前事务，如果没有，那也不开启事务执行。这种传播级别可用于查询方法，因为 SELECT 语句既可以在事务内执行，也可以不需要事务；
 
 `MANDATORY`：表示必须要存在当前事务并加入执行，否则将抛出异常。这种传播级别可用于核心更新逻辑，比如用户余额变更，它总是被其他事务方法调用，不能直接由非事务方法调用；
 
@@ -1014,11 +1016,11 @@ public Product createProduct() {
 }
 ```
 
-#### 2.3.2 使用DAO
+#### 2.3.2 使用 DAO
 
-Controller -> Service   Service -> Dao
+Controller -> Service Service -> Dao
 
-写数据访问层的时候，可以使用DAO模式。DAO即Data Access Object的缩写
+写数据访问层的时候，可以使用 DAO 模式。DAO 即 Data Access Object 的缩写
 
 ```java
 public class UserDao {
@@ -1048,15 +1050,15 @@ public class UserDao {
 }
 ```
 
-是否使用DAO，根据实际情况决定，因为很多时候，直接在Service层操作数据库也是完全没有问题的
+是否使用 DAO，根据实际情况决定，因为很多时候，直接在 Service 层操作数据库也是完全没有问题的
 
-#### 2.3.4 集成Hibernate
+#### 2.3.4 集成 Hibernate
 
-在jdbcTemplate种，用RowMapper函数把ResultSet转成Java Bean
+在 jdbcTemplate 种，用 RowMapper 函数把 ResultSet 转成 Java Bean
 
-这种把关系数据库的表记录映射为Java对象的过程就是ORM：Object-Relational Mapping。ORM既可以把记录转换成Java对象，也可以把Java对象转换为行记录
+这种把关系数据库的表记录映射为 Java 对象的过程就是 ORM：Object-Relational Mapping。ORM 既可以把记录转换成 Java 对象，也可以把 Java 对象转换为行记录
 
-Hibernate作为ORM框架，它可以替代`JdbcTemplate`，但Hibernate仍然需要JDBC驱动，所以，我们需要引入JDBC驱动、连接池，以及Hibernate本身
+Hibernate 作为 ORM 框架，它可以替代`JdbcTemplate`，但 Hibernate 仍然需要 JDBC 驱动，所以，我们需要引入 JDBC 驱动、连接池，以及 Hibernate 本身
 
 ##### 配置
 
@@ -1070,7 +1072,7 @@ public class AppConfig {
     DataSource createDataSource() {
         ...
     }
-    
+
     //用了上面注入的DataSource,创建一个LocalSessionFactoryBean
      @Bean
     LocalSessionFactoryBean createSessionFactory(@Autowired DataSource dataSource) {
@@ -1085,7 +1087,7 @@ public class AppConfig {
         sessionFactoryBean.setHibernateProperties(props);
         return sessionFactoryBean;
     }
-    
+
     //创建Template和TransactionManager
      @Bean
     HibernateTemplate createHibernateTemplate(@Autowired SessionFactory sessionFactory) {
@@ -1101,9 +1103,11 @@ public class AppConfig {
 
 `LocalSessionFactoryBean`是一个`FactoryBean`，它会再自动创建一个`SessionFactory`
 
-在Hibernate中，`Session`是封装了一个JDBC `Connection`的实例，而`SessionFactory`是封装了JDBC `DataSource`的实例，即`SessionFactory`持有连接池，每次需要操作数据库的时候，`SessionFactory`创建一个新的`Session`，相当于从连接池获取到一个新的`Connection`。`SessionFactory`就是Hibernate提供的最核心的一个对象，但`LocalSessionFactoryBean`是Spring提供的为了让我们方便创建`SessionFactory`的类
+在 Hibernate 中，`Session`是封装了一个 JDBC `Connection`的实例，而`SessionFactory`是封装了 JDBC `DataSource`的实例，即`SessionFactory`
+持有连接池，每次需要操作数据库的时候，`SessionFactory`创建一个新的`Session`，相当于从连接池获取到一个新的`Connection`。`SessionFactory`就是 Hibernate
+提供的最核心的一个对象，但`LocalSessionFactoryBean`是 Spring 提供的为了让我们方便创建`SessionFactory`的类
 
-##### 用注解定义Entity
+##### 用注解定义 Entity
 
 ```java
 @Entity
@@ -1128,9 +1132,9 @@ public class User {
 }
 ```
 
- 使用Hibernate时，不要使用基本类型的属性，总是使用包装类型，如Long或Integer。
+使用 Hibernate 时，不要使用基本类型的属性，总是使用包装类型，如 Long 或 Integer。
 
-可以把不同的entity中相同的属性抽象出来
+可以把不同的 entity 中相同的属性抽象出来
 
 ```java
 @MappedSuperclass //这个注解表示用于继承
@@ -1159,7 +1163,7 @@ public abstract class AbstractEntity {
 }
 ```
 
-注意到使用的所有注解均来自`javax.persistence`，它是JPA规范的一部分
+注意到使用的所有注解均来自`javax.persistence`，它是 JPA 规范的一部分
 
 ##### 表的增删改操作
 
@@ -1169,7 +1173,7 @@ public abstract class AbstractEntity {
 public class UserService {
     @Autowired
     HibernateTemplate hibernateTemplate;
-    
+
     //Insert操作
     public User register(String email, String password, String name) {
         // 创建一个User对象:
@@ -1185,7 +1189,7 @@ public class UserService {
         System.out.println(user.getId());
         return user;
     }
-    
+
     //Delete操作
     public boolean deleteUser(Long id) {
         User user = hibernateTemplate.get(User.class, id);
@@ -1195,22 +1199,22 @@ public class UserService {
         }
         return false;
     }
-    
+
     //Update操作
     public void updateUser(Long id, String name) {
         User user = hibernateTemplate.load(User.class, id);
         user.setName(name);
         hibernateTemplate.update(user);
     }
-    
+
 }
 ```
 
 ##### 表的查询
 
-`方法1`使用Example
+`方法1`使用 Example
 
-使用`findByExample()`，给出一个`User`实例，Hibernate把该实例所有非`null`的属性拼成`WHERE`条件
+使用`findByExample()`，给出一个`User`实例，Hibernate 把该实例所有非`null`的属性拼成`WHERE`条件
 
 ```java
 public User login(String email, String password) {
@@ -1222,7 +1226,7 @@ public User login(String email, String password) {
 }
 ```
 
-`方法2` 使用Criteria查询
+`方法2` 使用 Criteria 查询
 
 ```java
 public User login(String email, String password) {
@@ -1234,17 +1238,17 @@ public User login(String email, String password) {
 }
 ```
 
-`方法3` 使用HQL查询
+`方法3` 使用 HQL 查询
 
 ```java
 List<User> list = (List<User>) hibernateTemplate.find("FROM User WHERE email=? AND password=?", email, password);
 ```
 
-#### 2.3.5 集成JPA
+#### 2.3.5 集成 JPA
 
-JPA就是JavaEE的一个ORM标准
+JPA 就是 JavaEE 的一个 ORM 标准
 
-Hibernate是JPA的一个实现
+Hibernate 是 JPA 的一个实现
 
 ##### 配置
 
@@ -1256,7 +1260,7 @@ Hibernate是JPA的一个实现
 public class AppConfig {
     @Bean
     DataSource createDataSource() { ... }
-    
+
     //类比Hibernate的LocalSessionFactoryBean 和 SessionFactory
     @Bean
 	LocalContainerEntityManagerFactoryBean createEntityManagerFactory(@Autowired DataSource dataSource) {
@@ -1276,7 +1280,7 @@ public class AppConfig {
         entityManagerFactoryBean.setJpaProperties(props);
         return entityManagerFactoryBean;
     }
-    
+
     //实例化一个JpaTransactionManager，以实现声明式事务
     @Bean
     PlatformTransactionManager createTxManager(@Autowired EntityManagerFactory entityManagerFactory) {
@@ -1285,7 +1289,7 @@ public class AppConfig {
 }
 ```
 
-##### Service中使用
+##### Service 中使用
 
 ```java
 @Component
@@ -1293,7 +1297,7 @@ public class AppConfig {
 public class UserService {
     @PersistenceContext //不要使用Autowired，而是@PersistenceContext,表示多个线程共享
     EntityManager em;
-    
+
     //业务使用
     public User getUserById(long id) {
         User user = this.em.find(User.class, id);
@@ -1307,18 +1311,19 @@ public class UserService {
 
 这里注入的并不是真正的`EntityManager`，而是一个`EntityManager`的代理类
 
-Spring遇到标注了`@PersistenceContext`的`EntityManager`会自动注入代理，该代理会在必要的时候自动打开`EntityManager`。换句话说，多线程引用的`EntityManager`虽然是同一个代理类，但该代理类内部针对不同线程会创建不同的`EntityManager`实例
+Spring 遇到标注了`@PersistenceContext`的`EntityManager`会自动注入代理，该代理会在必要的时候自动打开`EntityManager`。换句话说，多线程引用的`EntityManager`
+虽然是同一个代理类，但该代理类内部针对不同线程会创建不同的`EntityManager`实例
 
 #### 2.3.6 MyBatis
 
-Hibernate/JPA被称作全自动ORM，对比jdbcTemplate，主要自动化了以下2点
+Hibernate/JPA 被称作全自动 ORM，对比 jdbcTemplate，主要自动化了以下 2 点
 
-1. 增删改的参数不需要手动传入，不需要去对应Entity的哪个属性
-2. 结果不需要用RowMapper函数把ResultSet转成JavaBean
+1. 增删改的参数不需要手动传入，不需要去对应 Entity 的哪个属性
+2. 结果不需要用 RowMapper 函数把 ResultSet 转成 JavaBean
 
-Mybatis被称为半自动化ORM，只实现了RowMapper的功能，还是需要输入SQL语句
+Mybatis 被称为半自动化 ORM，只实现了 RowMapper 的功能，还是需要输入 SQL 语句
 
-##### 配置 -  几种方法的配置区别表
+##### 配置 - 几种方法的配置区别表
 
 ```java
 @Configuration
@@ -1328,7 +1333,7 @@ Mybatis被称为半自动化ORM，只实现了RowMapper的功能，还是需要�
 public class AppConfig {
     @Bean
     DataSource createDataSource() { ... }
-    
+
     //创建SqlSessionFactory
     @Bean
     SqlSessionFactoryBean createSqlSessionFactoryBean(@Autowired DataSource dataSource) {
@@ -1353,40 +1358,40 @@ public class AppConfig {
 
 ##### MyBatis Mapper
 
-和Hibernate不同的是，MyBatis使用Mapper来实现映射，而且Mapper必须是接口
+和 Hibernate 不同的是，MyBatis 使用 Mapper 来实现映射，而且 Mapper 必须是接口
 
 ```java
 public interface UserMapper {
 	@Select("SELECT * FROM users WHERE id = #{id}")
 	User getById(@Param("id") long id);
-    
+
     //如果是多个参数，用#占位符
     @Select("SELECT * FROM users LIMIT #{offset}, #{maxResults}")
 	List<User> getAll(@Param("offset") int offset, @Param("maxResults") int maxResults);
-    
+
     //别名返回，用AS
     //SELECT id, name, email, created_time AS createdAt FROM users
-    
+
     //INSERT 以#{obj.property}的方式写占位符
     @Insert("INSERT INTO users (email, password, name, createdAt) VALUES (#{user.email}, #{user.password}, #{user.name}, #{user.createdAt})")
     void insert(@Param("user") User user);
-    
+
     //如果users表的id是自增主键，那么，我们在SQL中不传入id，但希望获取插入后的主键，需要再加一个@Options注解
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     @Insert("INSERT INTO users (email, password, name, createdAt) VALUES (#{user.email}, #{user.password}, #{user.name}, #{user.createdAt})")
     void insert(@Param("user") User user);
-    
+
     //Update和Delete
     @Update("UPDATE users SET name = #{user.name}, createdAt = #{user.createdAt} WHERE id = #{user.id}")
     void update(@Param("user") User user);
 
     @Delete("DELETE FROM users WHERE id = #{id}")
     void deleteById(@Param("id") long id);
-    
+
 }
 ```
 
-使用@MapperScan来为所有Interface 类型的Mapper，自动创建实现类
+使用@MapperScan 来为所有 Interface 类型的 Mapper，自动创建实现类
 
 ```java
 @MapperScan("com.itranswarp.learnjava.mapper")
@@ -1396,7 +1401,7 @@ public class AppConfig {
 }
 ```
 
-##### 注入Sevice
+##### 注入 Sevice
 
 ```java
 @Component
@@ -1417,15 +1422,11 @@ public class UserService {
 }
 ```
 
+## 3 Maven 基础
 
+### 3.1 Maven 介绍
 
-
-
-## 3 Maven基础
-
-### 3.1 Maven介绍
-
-一个使用Maven管理的普通的Java项目，它的目录结构默认如下：
+一个使用 Maven 管理的普通的 Java 项目，它的目录结构默认如下：
 
 ```scheme
 a-maven-project				//项目名
@@ -1434,7 +1435,7 @@ a-maven-project				//项目名
 │   ├── main
 │   │   ├── java			//源码
 │   │   └── resources		//资源文件
-│   └── test	
+│   └── test
 │       ├── java			//测试源码
 │       └── resources		//测试资源
 └── target					//编译结果
@@ -1445,9 +1446,9 @@ pom.xml
 ```xml
 <project ...>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.itranswarp.learnjava</groupId>  // 包名
-	<artifactId>hello</artifactId>				//  类名	
-	<version>1.0</version>	//每个maven工程=groupId+artifactId+version作为唯一标识
+<groupId>com.itranswarp.learnjava</groupId>  // 包名
+<artifactId>hello</artifactId>                //  类名
+<version>1.0</version>    //每个maven工程=groupId+artifactId+version作为唯一标识
 	<packaging>jar</packaging>
 	<properties>
         ...
@@ -1466,14 +1467,14 @@ pom.xml
 
 #### 依赖关系
 
-Maven定义了几种依赖关系，分别是`compile`、`test`、`runtime`和`provided`：
+Maven 定义了几种依赖关系，分别是`compile`、`test`、`runtime`和`provided`：
 
-| scope    | 说明                                          | 示例            |
-| :------- | :-------------------------------------------- | :-------------- |
-| compile  | 编译时需要用到该jar包（默认）                 | commons-logging |
-| test     | 编译Test时需要用到该jar包                     | junit           |
-| runtime  | 编译时不需要，但运行时需要用到                | mysql           |
-| provided | 编译时需要用到，但运行时由JDK或某个服务器提供 | servlet-api     |
+| scope    | 说明                                            | 示例            |
+| :------- | :---------------------------------------------- | :-------------- |
+| compile  | 编译时需要用到该 jar 包（默认）                 | commons-logging |
+| test     | 编译 Test 时需要用到该 jar 包                   | junit           |
+| runtime  | 编译时不需要，但运行时需要用到                  | mysql           |
+| provided | 编译时需要用到，但运行时由 JDK 或某个服务器提供 | servlet-api     |
 
 示例
 
@@ -1486,15 +1487,15 @@ Maven定义了几种依赖关系，分别是`compile`、`test`、`runtime`和`pr
 </dependency>
 ```
 
-Maven的中央仓库（[repo1.maven.org](https://repo1.maven.org/)）
+Maven 的中央仓库（[repo1.maven.org](https://repo1.maven.org/)）
 
-一个jar包一旦被下载过，就会被Maven自动缓存在本地目录（用户主目录的`.m2`目录）
+一个 jar 包一旦被下载过，就会被 Maven 自动缓存在本地目录（用户主目录的`.m2`目录）
 
-#### Maven镜像
+#### Maven 镜像
 
-除了可以从Maven的中央仓库下载外，还可以从Maven的镜像仓库下载
+除了可以从 Maven 的中央仓库下载外，还可以从 Maven 的镜像仓库下载
 
-中国区用户可以使用阿里云提供的Maven镜像仓库。使用Maven镜像仓库需要一个配置，在用户主目录下进入`.m2`目录，创建一个`settings.xml`配置文件，内容如下：
+中国区用户可以使用阿里云提供的 Maven 镜像仓库。使用 Maven 镜像仓库需要一个配置，在用户主目录下进入`.m2`目录，创建一个`settings.xml`配置文件，内容如下：
 
 ```xml
 <settings>
@@ -1510,7 +1511,7 @@ Maven的中央仓库（[repo1.maven.org](https://repo1.maven.org/)）
 </settings>
 ```
 
-也可以在pom.xml中设置仓库地址
+也可以在 pom.xml 中设置仓库地址
 
 ```xml
 <repositories>
@@ -1548,9 +1549,9 @@ Maven的中央仓库（[repo1.maven.org](https://repo1.maven.org/)）
 
 ### 3.3 构建流程
 
-Maven有不同的lifecycle，每种lifecycle有不同的phase组成，每个phase又有不同的Goal
+Maven 有不同的 lifecycle，每种 lifecycle 有不同的 phase 组成，每个 phase 又有不同的 Goal
 
-default lifecycle的phase如下
+default lifecycle 的 phase 如下
 
 - validate
 - initialize
@@ -1578,7 +1579,7 @@ default lifecycle的phase如下
 
 在实际开发过程中，经常使用的命令有：
 
-`mvn clean`：清理所有生成的class和jar；
+`mvn clean`：清理所有生成的 class 和 jar；
 
 `mvn clean compile`：先清理，再执行到`compile`；
 
@@ -1588,15 +1589,11 @@ default lifecycle的phase如下
 
 #### Goal
 
-执行一个phase又会触发一个或多个goal：
+执行一个 phase 又会触发一个或多个 goal：
 
-| 执行的Phase | 对应执行的Goal                     |
-| :---------- | :--------------------------------- |
-| compile     | compiler:compile                   |
-| test        | compiler:testCompile surefire:test |
-
-
-
-
+| 执行的 Phase | 对应执行的 Goal                    |
+| :----------- | :--------------------------------- |
+| compile      | compiler:compile                   |
+| test         | compiler:testCompile surefire:test |
 
 {% endraw %}

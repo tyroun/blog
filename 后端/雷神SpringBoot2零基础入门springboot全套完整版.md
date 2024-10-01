@@ -1,8 +1,8 @@
 {% raw %}
 
-# 雷神SpringBoot2零基础入门springboot全套完整版
+# 雷神 SpringBoot2 零基础入门 springboot 全套完整版
 
-[B站链接](https://www.bilibili.com/video/BV19K4y1L7MT?p=2&spm_id_from=pageDriver)
+[B 站链接](https://www.bilibili.com/video/BV19K4y1L7MT?p=2&spm_id_from=pageDriver)
 
 [笔记链接上](https://blog.csdn.net/u011863024/article/details/113667634)
 
@@ -10,22 +10,22 @@
 
 ## 1 基础入门
 
-### 1 SpringBoot2课程介绍
+### 1 SpringBoot2 课程介绍
 
 - 学习资料
-  - [Spring Boot官网](https://spring.io/projects/spring-boot)
-  - [Spring Boot官方文档](https://docs.spring.io/spring-boot/docs/)
-  - [本课程文档地址](https://www.yuque.com/atguigu/springboot)
-  - [视频地址1](http://www.gulixueyuan.com/)、[视频地址2](https://www.bilibili.com/video/BV19K4y1L7MT?p=1)
-  - [源码地址](https://gitee.com/leifengyang/springboot2)
+    - [Spring Boot 官网](https://spring.io/projects/spring-boot)
+    - [Spring Boot 官方文档](https://docs.spring.io/spring-boot/docs/)
+    - [本课程文档地址](https://www.yuque.com/atguigu/springboot)
+    - [视频地址 1](http://www.gulixueyuan.com/)、[视频地址 2](https://www.bilibili.com/video/BV19K4y1L7MT?p=1)
+    - [源码地址](https://gitee.com/leifengyang/springboot2)
 
-### 2 Spring生态圈
+### 2 Spring 生态圈
 
-#### Spring的生态
+#### Spring 的生态
 
 覆盖了：
 
-- web开发
+- web 开发
 - 数据访问
 - 安全控制
 - 分布式
@@ -34,24 +34,22 @@
 - 批处理
 - …
 
-#### Spring5重大升级
+#### Spring5 重大升级
 
 - 响应式编程
 
 - 内部源码设计
 
-基于Java8的一些新特性，如：接口默认实现。重新设计[源码](https://so.csdn.net/so/search?q=源码&spm=1001.2101.3001.7020)架构。
+基于 Java8 的一些新特性，如：接口默认实现。重新设计[源码](https://so.csdn.net/so/search?q=源码&spm=1001.2101.3001.7020)架构。
 
-### 4 SpringBoot官方文档架构
+### 4 SpringBoot 官方文档架构
 
-- [Spring Boot官网](https://spring.io/projects/spring-boot)
-- [Spring Boot官方文档](https://docs.spring.io/spring-boot/docs/)
+- [Spring Boot 官网](https://spring.io/projects/spring-boot)
+- [Spring Boot 官方文档](https://docs.spring.io/spring-boot/docs/)
 
 #### 官网文档架构
 
 ![image-20220312110955022](../image/雷神SpringBoot2零基础入门springboot全套完整版/image-20220312110955022.png)
-
-
 
 ![image-20220312110903709](../image/雷神SpringBoot2零基础入门springboot全套完整版/image-20220312110903709.png)
 
@@ -59,14 +57,14 @@
 
 #### 1 父项目做依赖管理
 
-IDEA用Ctrl+Alt+左键鼠标跳转，但是pom没法调整，等着装上插件再试试看
+IDEA 用 Ctrl+Alt+左键鼠标跳转，但是 pom 没法调整，等着装上插件再试试看
 
 ```xml
 依赖管理
 <parent>
 	<groupId>org.springframework.boot</groupId>
-	<artifactId>spring-boot-starter-parent</artifactId>
-	<version>2.3.4.RELEASE</version> 
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.3.4.RELEASE</version>
     这个版本号就定义了<dependency></dependency>的版本
 </parent>
 
@@ -79,45 +77,44 @@ IDEA用Ctrl+Alt+左键鼠标跳转，但是pom没法调整，等着装上插件�
 它几乎声明了所有开发中常用的依赖的版本号，自动版本仲裁机制
 ```
 
-#### 2 开发导入starter场景启动器
+#### 2 开发导入 starter 场景启动器
 
 1. 见到很多 spring-boot-starter-* ： *就某种场景
-2. 只要引入starter，这个场景的所有常规需要的依赖我们都自动引入
-3. 更多SpringBoot所有支持的场景
-4. 见到的 *-spring-boot-starter： 第三方为我们提供的简化开发的场景启动器。
+2. 只要引入 starter，这个场景的所有常规需要的依赖我们都自动引入
+3. 更多 SpringBoot 所有支持的场景
+4. 见到的 \*-spring-boot-starter： 第三方为我们提供的简化开发的场景启动器。
 
-```xml 
+```xml
 所有场景启动器最底层的依赖
 <dependency>
-	<groupId>org.springframework.boot</groupId>
-	<artifactId>spring-boot-starter</artifactId>
-	<version>2.3.4.RELEASE</version>
-	<scope>compile</scope>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter</artifactId>
+    <version>2.3.4.RELEASE</version>
+    <scope>compile</scope>
 </dependency>
 ```
 
 ####3 无需关注版本号，自动版本仲裁
 
-引入依赖默认都可以不写版本
-引入非版本仲裁的jar，要写版本号。
+引入依赖默认都可以不写版本 引入非版本仲裁的 jar，要写版本号。
 
 #### 4 可以修改默认版本号
 
-查看spring-boot-dependencies里面规定当前依赖的版本 用的 key。
-在当前项目里面重写配置，如下面的代码
+查看 spring-boot-dependencies 里面规定当前依赖的版本 用的 key。 在当前项目里面重写配置，如下面的代码
 
-```xml 
+```xml
+
 <properties>
-	<mysql.version>5.1.43</mysql.version>
+    <mysql.version>5.1.43</mysql.version>
 </properties>
 ```
 
 ### 7 自动配置
 
-#### 7.1 自动配好Tomcat
+#### 7.1 自动配好 Tomcat
 
-1. 引入Tomcat依赖。
-2. 配置Tomcat
+1. 引入 Tomcat 依赖。
+2. 配置 Tomcat
 
 ```xml
 <dependency>
@@ -128,15 +125,13 @@ IDEA用Ctrl+Alt+左键鼠标跳转，但是pom没法调整，等着装上插件�
 </dependency>
 ```
 
+#### 7.2 自动配好 SpringMVC
 
-#### 7.2 自动配好SpringMVC
+引入 SpringMVC 全套组件 自动配好 SpringMVC 常用组件（功能）
 
-引入SpringMVC全套组件
-自动配好SpringMVC常用组件（功能）
+#### 7.3 自动配好 Web 常见功能，如：字符编码问题
 
-#### 7.3 自动配好Web常见功能，如：字符编码问题
-
-SpringBoot帮我们配置好了所有web开发的常见场景
+SpringBoot 帮我们配置好了所有 web 开发的常见场景
 
 ```java
 public static void main(String[] args) {
@@ -152,8 +147,8 @@ public static void main(String[] args) {
 }
 ```
 
-
 #### 7.4 默认的包结构
+
 - 主程序所在包及其下面的所有子包里面的组件都会被默认扫描进来
 
 - 无需以前的包扫描配置
@@ -178,9 +173,7 @@ public static void main(String[] args) {
 
 #### 7.6 创建对象按需加载所有自动配置项
 
-非常多的starter
-引入了哪些场景这个场景的自动配置才会开启
-SpringBoot所有的自动配置功能都在 spring-boot-autoconfigure 包里面
+非常多的 starter 引入了哪些场景这个场景的自动配置才会开启 SpringBoot 所有的自动配置功能都在 spring-boot-autoconfigure 包里面
 
 ## 2、容器功能
 
@@ -190,18 +183,21 @@ SpringBoot所有的自动配置功能都在 spring-boot-autoconfigure 包里面
 
 #### 2.1.1 @Configuration
 
-- 基本使用 - 在配置类里创建一个java方法来返回一个Bean
-- **Full模式与Lite模式**
+- 基本使用 - 在配置类里创建一个 java 方法来返回一个 Bean
+- **Full 模式与 Lite 模式**
 
 - 示例
 
-- 1. 配置类里面使用@Bean标注在方法上给容器注册组件，默认也是单实例的
+-
+    1. 配置类里面使用@Bean 标注在方法上给容器注册组件，默认也是单实例的
 
-- 2. 配置类本身也是组件
+-
+    2. 配置类本身也是组件
 
-- 3. proxyBeanMethods：代理bean的方法
-     1. Full(proxyBeanMethods = true)（保证每个@Bean方法被调用多少次返回的组件都是`单实例`的）（默认）
-     2. Lite(proxyBeanMethods = false)（每个@Bean方法被调用多少次返回的组件都是`新创建`的）
+-
+    3. proxyBeanMethods：代理 bean 的方法
+        1. Full(proxyBeanMethods = true)（保证每个@Bean 方法被调用多少次返回的组件都是`单实例`的）（默认）
+        2. Lite(proxyBeanMethods = false)（每个@Bean 方法被调用多少次返回的组件都是`新创建`的）
 
 ```java
 @Configuration(proxyBeanMethods = false) //告诉SpringBoot这是一个配置类 == 配置文件
@@ -268,31 +264,29 @@ public class MainApplication {
 
 - 最佳实战
 
-- - - 配置类组件之间无依赖关系用Lite模式加速容器启动过程，减少判断
-    - 配置类组件之间有依赖关系，方法会被调用得到之前单实例组件，用Full模式
+-
+    -
+        - 配置类组件之间无依赖关系用 Lite 模式加速容器启动过程，减少判断
+        - 配置类组件之间有依赖关系，方法会被调用得到之前单实例组件，用 Full 模式
 
 #### 2.1.2 @Bean、@Component、@Controller、@Service、@Repository
 
 ##### 定义
 
-> 对于Spring容器来说，当我们把一个Bean标记为`@Component`后，它就会自动为我们创建一个单例（Singleton）。如果想每次都返回一个新的实例，用Prototype
+> 对于 Spring 容器来说，当我们把一个 Bean 标记为`@Component`后，它就会自动为我们创建一个单例（Singleton）。如果想每次都返回一个新的实例，用 Prototype
 
-@Bean：表示一个方法实例化、配置或者初始化一个Spring IoC容器管理的新对象。
-@Component: 自动被comonent扫描。 表示被注解的类会自动被component扫描
-@Repository: 用于持久层，主要是数据库存储库。
-@Service: 表示被注解的类是位于业务层的业务component。
-@Controller:表明被注解的类是控制component，主要用于展现层 。
+@Bean：表示一个方法实例化、配置或者初始化一个 Spring IoC 容器管理的新对象。 @Component: 自动被 comonent 扫描。 表示被注解的类会自动被 component 扫描 @Repository:
+用于持久层，主要是数据库存储库。 @Service: 表示被注解的类是位于业务层的业务 component。 @Controller:表明被注解的类是控制 component，主要用于展现层 。
 
-##### @Bean与@Component区别
+##### @Bean 与@Component 区别
 
-@Component是 spring 2.5引入的，为了摆脱通过classpath扫描根据xml方式定义的bean的方式.
+@Component 是 spring 2.5 引入的，为了摆脱通过 classpath 扫描根据 xml 方式定义的 bean 的方式.
 
-@Bean是spring 3.0 引入的，和 @Configuration一起工作，为了摆脱原先的xml和java config方式。
+@Bean 是 spring 3.0 引入的，和 @Configuration 一起工作，为了摆脱原先的 xml 和 java config 方式。
 
-Spring管理Bean方式有两种，一种是注册Bean，一种装配Bean。
-可以通过三种方式实现bean管理，一使用自动配置的方式、二使用JavaConfig的方式、三使用XML配置的方式。
+Spring 管理 Bean 方式有两种，一种是注册 Bean，一种装配 Bean。 可以通过三种方式实现 bean 管理，一使用自动配置的方式、二使用 JavaConfig 的方式、三使用 XML 配置的方式。
 
-@Compent 作用就相当于 XML配置
+@Compent 作用就相当于 XML 配置
 
 ```java
 @Component
@@ -302,7 +296,7 @@ public class User{
 }
 ```
 
-> @Bean 需要在配置类中使用，即类上需要加上@Component或者@Configuration注解， 通常加上@Configuration。 @Bean的用法在这里。
+> @Bean 需要在配置类中使用，即类上需要加上@Component 或者@Configuration 注解， 通常加上@Configuration。 @Bean 的用法在这里。
 
 ```java
 @Configuration
@@ -315,14 +309,14 @@ public class AppConfig {
 }
 ```
 
-两者都可以通过@Autowired装配
+两者都可以通过@Autowired 装配
 
 ```java
 @Autowired
 private TransferService transferService;
 ```
 
-##### @Component与@Service区别
+##### @Component 与@Service 区别
 
 目前基本没有区别
 
@@ -343,15 +337,15 @@ public class MyConfig {
 
 #### 2.1.4 @Conditional
 
-条件装配：满足Conditional指定的条件，则进行组件注入
+条件装配：满足 Conditional 指定的条件，则进行组件注入
 
 ```java
 =====================测试条件装配==========================
-@Configuration(proxyBeanMethods = false) 
+@Configuration(proxyBeanMethods = false)
 //@ConditionalOnBean(name = "tom")
 @ConditionalOnMissingBean(name = "tom") //只有满足条件，类里注册的组件才能成功
 public class MyConfig {
-    @Bean 
+    @Bean
     public User user01(){
         User zhangsan = new User("zhangsan", 18);
         //user组件依赖了Pet组件
@@ -390,7 +384,7 @@ public static void main(String[] args) {
 
 #### 2.2.1 @ImportResource
 
-负责引入xml里面定义的Bean组件
+负责引入 xml 里面定义的 Bean 组件
 
 ```xml
 ======================beans.xml=========================
@@ -418,9 +412,9 @@ public class MyConfig {}
 
 ### 2.3 配置绑定
 
-如何使用Java读取到properties文件中的内容，并且把它封装到JavaBean中，以供随时使用
+如何使用 Java 读取到 properties 文件中的内容，并且把它封装到 JavaBean 中，以供随时使用
 
-Java原生代码例子：
+Java 原生代码例子：
 
 ```java
 public class getProperties {
@@ -456,7 +450,7 @@ mycar.name="sss"
 mycar.price=10000
 ```
 
-#### 2.3.2 @ConfigurationProperties + @EnableConfigurationProperties 
+#### 2.3.2 @ConfigurationProperties + @EnableConfigurationProperties
 
 ```java
 @Configuration
@@ -479,7 +473,7 @@ public class MyConfig {
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
 		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
 public @interface SpringBootApplication{}
-    
+
 ```
 
 #### 3.1.1 @SpringBootConfiguration
@@ -488,7 +482,7 @@ public @interface SpringBootApplication{}
 
 #### 3.1.2 @ComponentScan
 
-指定扫描哪些，Spring注解；
+指定扫描哪些，Spring 注解；
 
 #### 3.1.3 @EnableAutoConfiguration
 
@@ -514,20 +508,17 @@ public @interface AutoConfigurationPackage {}
 
 ##### 2 @Import(AutoConfigurationImportSelector.class)
 
-1、利用getAutoConfigurationEntry(annotationMetadata);给容器中批量导入一些组件
-2、调用```List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes)```获取到所有需要导入到容器中的配置类
-3、利用工厂加载 Map<String, List<String>> loadSpringFactories(@Nullable ClassLoader classLoader)；得到所有的组件
-4、从META-INF/spring.factories位置来加载一个文件。
-	默认扫描我们当前系统里面所有META-INF/spring.factories位置的文件
-    spring-boot-autoconfigure-2.3.4.RELEASE.jar包里面也有META-INF/spring.factories
+1、利用 getAutoConfigurationEntry(annotationMetadata);给容器中批量导入一些组件
+2、调用`List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes)`获取到所有需要导入到容器中的配置类 3、利用工厂加载
+Map<String, List<String>> loadSpringFactories(@Nullable ClassLoader classLoader)；得到所有的组件 4、从 META-INF/spring.factories
+位置来加载一个文件。 默认扫描我们当前系统里面所有 META-INF/spring.factories 位置的文件 spring-boot-autoconfigure-2.3.4.RELEASE.jar 包里面也有
+META-INF/spring.factories
 
-文件里面写死了spring-boot一启动就要给容器中加载的所有配置类
-spring-boot-autoconfigure-2.3.4.RELEASE.jar/META-INF/spring.factories
+文件里面写死了 spring-boot 一启动就要给容器中加载的所有配置类 spring-boot-autoconfigure-2.3.4.RELEASE.jar/META-INF/spring.factories
 
 ### 3.2、按需开启自动配置项
 
-虽然我们127个场景的所有自动配置启动的时候默认全部加载。xxxxAutoConfiguration
-按照条件装配规则（@Conditional），最终会按需配置。
+虽然我们 127 个场景的所有自动配置启动的时候默认全部加载。xxxxAutoConfiguration 按照条件装配规则（@Conditional），最终会按需配置。
 
 ### 3.3、修改默认配置
 
@@ -545,7 +536,7 @@ public MultipartResolver multipartResolver(MultipartResolver resolver) {
 
 ```
 
-SpringBoot默认会在底层配好所有的组件。但是如果用户自己配置了以用户的优先
+SpringBoot 默认会在底层配好所有的组件。但是如果用户自己配置了以用户的优先
 
 ```java
 @Bean
@@ -556,19 +547,16 @@ public CharacterEncodingFilter characterEncodingFilter() {
 
 总结：
 
-- SpringBoot先加载所有的自动配置类  xxxxxAutoConfiguration
-- 每个自动配置类按照条件进行生效，默认都会绑定配置文件指定的值。xxxxProperties里面拿。xxxProperties和配置文件进行了绑定
+- SpringBoot 先加载所有的自动配置类 xxxxxAutoConfiguration
+- 每个自动配置类按照条件进行生效，默认都会绑定配置文件指定的值。xxxxProperties 里面拿。xxxProperties 和配置文件进行了绑定
 - 生效的配置类就会给容器中装配很多组件
 - 只要容器中有这些组件，相当于这些功能就有了
 - 定制化配置
 
-- - 用户直接自己@Bean替换底层的组件
-  - 用户去看这个组件是获取的配置文件什么值就去修改。
+-
+    - 用户直接自己@Bean 替换底层的组件
+    - 用户去看这个组件是获取的配置文件什么值就去修改。
 
-``xxxxxAutoConfiguration ---> 组件  --->** **xxxxProperties里面拿值  ----> application.properties``
-
-
-
-
+`xxxxxAutoConfiguration ---> 组件 --->** **xxxxProperties里面拿值 ----> application.properties`
 
 {% endraw %}

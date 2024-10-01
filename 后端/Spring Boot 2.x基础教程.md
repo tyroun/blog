@@ -6,28 +6,28 @@ https://blog.didispace.com/spring-boot-learning-2x/
 
 ## 1 环境搭建
 
-### 1.1 典型package组织方式
+### 1.1 典型 package 组织方式
 
 ```
-com  
-+- example   
-	+- myproject      
-		+- Application.java      
-		|      
-		+- domain      
-		|  +- Customer.java      
-		|  +- CustomerRepository.java      
-		|      
-		+- service      
-		|  +- CustomerService.java      
-		|      
-		+- web      
-		|  +- CustomerController.java      
+com
++- example
+	+- myproject
+		+- Application.java
+		|
+		+- domain
+		|  +- Customer.java
+		|  +- CustomerRepository.java
+		|
+		+- service
+		|  +- CustomerService.java
+		|
+		+- web
+		|  +- CustomerController.java
 ```
 
 - `com.example.myproject.domain`包：用于定义实体映射关系与数据访问相关的接口和实现
 - `com.example.myproject.service`包：用于编写业务逻辑相关的接口与实现
-- `com.example.myproject.web`：用于编写Web层相关的实现，比如：Spring MVC的Controller等 
+- `com.example.myproject.web`：用于编写 Web 层相关的实现，比如：Spring MVC 的 Controller 等
 
 ## 2 配置详解
 
@@ -37,18 +37,18 @@ com
 
 默认配置文件位置为： `src/main/resources/application.properties`
 
-还支持YAML文件，YAML和properites的对比如下
+还支持 YAML 文件，YAML 和 properites 的对比如下
 
 YAML
 
 ```yaml
-environments:   
-	dev:       
-		url: http://dev.bar.com        
-		name: Developer Setup   
-	prod:       
-    	url: http://foo.bar.com       
-        name: My Cool App
+environments:
+  dev:
+    url: http://dev.bar.com
+    name: Developer Setup
+  prod:
+    url: http://foo.bar.com
+      name: My Cool App
 ```
 
 properties
@@ -60,7 +60,7 @@ environments.prod.url=http://foo.bar.com
 environments.prod.name=My Cool App
 ```
 
-YAML还可以指定不同的环境用不同的配置
+YAML 还可以指定不同的环境用不同的配置
 
 ```yaml
 server:
@@ -77,7 +77,7 @@ server:
   port: 8883
 ```
 
-#### 2.1.2 自定义参数@Value和参数引用
+#### 2.1.2 自定义参数@Value 和参数引用
 
 YAML
 
@@ -93,7 +93,7 @@ JAVA
 ```java
 @Component
 public class Book {
- 
+
     @Value("${book.name}")
     private String name;
     @Value("${book.author}")
@@ -103,8 +103,8 @@ public class Book {
 
 `@Value`注解加载属性值的时候可以支持两种表达式来进行配置：
 
-- 一种是我们上面介绍的PlaceHolder方式，格式为 `${...}`，大括号内为PlaceHolder
-- 另外还可以使用SpEL表达式（Spring Expression Language）， 格式为 `#{...}`，大括号内为SpEL表达式
+- 一种是我们上面介绍的 PlaceHolder 方式，格式为 `${...}`，大括号内为 PlaceHolder
+- 另外还可以使用 SpEL 表达式（Spring Expression Language）， 格式为 `#{...}`，大括号内为 SpEL 表达式
 
 #### 2.1.3 使用随机数
 
@@ -122,15 +122,15 @@ jave -jar xxx.jar --server.port=8888
 
 #### 2.1.5 多环境配置
 
-在resource下创建多个文件，文件名格式为
+在 resource 下创建多个文件，文件名格式为
 
 `application-{profile}.properties` 其实`{profile}`对应环境标识
 
-在`application.properties`中通过`sprint.profiles.active`属性来设置不同的profile
+在`application.properties`中通过`sprint.profiles.active`属性来设置不同的 profile
 
-#### 2.1.6 2.x新特性
+#### 2.1.6 2.x 新特性
 
-##### 1 List类型
+##### 1 List 类型
 
 一定要连续赋值
 
@@ -144,7 +144,7 @@ spring:
 		url: xxx, yyy
 ```
 
-##### 2 Map类型
+##### 2 Map 类型
 
 ```yaml
 spring:
@@ -153,28 +153,30 @@ spring:
 		hello: world
 ```
 
-## 3 API开发
+## 3 API 开发
 
-### 3.1 构建Restful API
+### 3.1 构建 Restful API
 
-- `@Controller`：修饰class，用来创建处理http请求的对象
-- `@RestController`：Spring4之后加入的注解，原来在`@Controller`中返回json需要`@ResponseBody`来配合，如果直接用`@RestController`替代`@Controller`就不需要再配置`@ResponseBody`，默认返回json格式
-- `@RequestMapping`：配置url映射。现在更多的也会直接用以Http Method直接关联的映射注解来定义，比如：`GetMapping`、`PostMapping`、`DeleteMapping`、`PutMapping`等
+- `@Controller`：修饰 class，用来创建处理 http 请求的对象
+- `@RestController`：Spring4 之后加入的注解，原来在`@Controller`中返回 json 需要`@ResponseBody`来配合，如果直接用`@RestController`替代`@Controller`
+  就不需要再配置`@ResponseBody`，默认返回 json 格式
+- `@RequestMapping`：配置 url 映射。现在更多的也会直接用以 Http Method 直接关联的映射注解来定义，比如：`GetMapping`、`PostMapping`、`DeleteMapping`
+  、`PutMapping`等
 
 #### 1 定义实体类
 
 ```java
 @Data
-public class User {    
+public class User {
     private Long id;
     private String name;
     private Integer age;
 }
 ```
 
-这里使用`@Data`注解可以实现在编译器自动添加set和get函数的效果。该注解是lombok提供的
+这里使用`@Data`注解可以实现在编译器自动添加 set 和 get 函数的效果。该注解是 lombok 提供的
 
-#### 2 定义Controller
+#### 2 定义 Controller
 
 ```java
 @RestController
@@ -252,9 +254,9 @@ public class UserController {
 }
 ```
 
-### 3.2 使用Swagger2构建文档
+### 3.2 使用 Swagger2 构建文档
 
-#### 1 整合Swagger2
+#### 1 整合 Swagger2
 
 在`pom.xml`中加入依赖
 
@@ -302,7 +304,7 @@ swagger:
 
 #### 2 完善文档内容
 
-我们通过`@Api`，`@ApiOperation`注解来给API增加说明、通过`@ApiImplicitParam`、`@ApiModel`、`@ApiModelProperty`注解来给参数增加说明
+我们通过`@Api`，`@ApiOperation`注解来给 API 增加说明、通过`@ApiImplicitParam`、`@ApiModel`、`@ApiModelProperty`注解来给参数增加说明
 
 ```java
 @Api(tags = "用户管理")
@@ -367,25 +369,26 @@ public class User {
 }
 ```
 
-![img](../image/Spring Boot 2.x基础教程/FoxwzIgdkIIx6Z5_U8DZq5MqVQf_.png)
+![img](../image/Spring Boot 2.x 基础教程/FoxwzIgdkIIx6Z5*U8DZq5MqVQf*.png)
 
-![img](../image/Spring Boot 2.x基础教程/Fjc9yvgYhnQCrM9-2VaQiGwK0v6M.png)
+![img](../image/Spring Boot 2.x 基础教程/Fjc9yvgYhnQCrM9-2VaQiGwK0v6M.png)
 
-### 3.3 JSR-303实现请求参数校验
+### 3.3 JSR-303 实现请求参数校验
 
-#### 1 JSR-303标准
+#### 1 JSR-303 标准
 
-JSR是Java Specification Requests的缩写，意思是Java 规范提案。是指向JCP(Java Community Process)提出新增一个标准化技术规范的正式请求。任何人都可以提交JSR，以向Java平台增添新的API和服务。JSR已成为Java界的一个重要标准
+JSR 是 Java Specification Requests 的缩写，意思是 Java 规范提案。是指向 JCP(Java Community Process)提出新增一个标准化技术规范的正式请求。任何人都可以提交 JSR，以向
+Java 平台增添新的 API 和服务。JSR 已成为 Java 界的一个重要标准
 
-JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate Validator 是 Bean Validation 的参考实现
+JSR-303 是 JAVA EE 6 中的一项子规范，叫做 Bean Validation，Hibernate Validator 是 Bean Validation 的参考实现
 
-**Bean Validation中内置的constraint**
+**Bean Validation 中内置的 constraint**
 
-![img](../image/Spring Boot 2.x基础教程/Fugzgq1zvxjKur4qdm_N-xV5twMj.png)
+![img](../image/Spring Boot 2.x 基础教程/Fugzgq1zvxjKur4qdm_N-xV5twMj.png)
 
-**Hibernate Validator附加的constraint**
+**Hibernate Validator 附加的 constraint**
 
-![img](../image/Spring Boot 2.x基础教程/FnNRRGx1eWbniJFHQz2m-pUIEWKa.png)
+![img](../image/Spring Boot 2.x 基础教程/FnNRRGx1eWbniJFHQz2m-pUIEWKa.png)
 
 #### 2 基本用法
 
@@ -395,18 +398,18 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
    @Data
    @ApiModel(description="用户实体")
    public class User {
-   
+
        @ApiModelProperty("用户编号")
        private Long id;
-   
+
        @NotNull
        @ApiModelProperty("用户姓名")
        private String name;
-   
+
        @NotNull
        @ApiModelProperty("用户年龄")
        private Integer age;
-   
+
    }
    ```
 
@@ -423,12 +426,12 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
 
 3. 出错时回复
 
-   - `timestamp`：请求时间
-   - `status`：HTTP返回的状态码，这里返回400，即：请求无效、错误的请求，通常参数校验不通过均为400
-   - `error`：HTTP返回的错误描述，这里对应的就是400状态的错误描述：Bad Request
-   - `errors`：具体错误原因，是一个数组类型；因为错误校验可能存在多个字段的错误，比如这里因为定义了两个参数不能为`Null`，所以存在两条错误记录信息
-   - `message`：概要错误消息，返回内容中很容易可以知道，这里的错误原因是对user对象的校验失败，其中错误数量为`2`，而具体的错误信息就定义在上面的`errors`数组中
-   - `path`：请求路径
+    - `timestamp`：请求时间
+    - `status`：HTTP 返回的状态码，这里返回 400，即：请求无效、错误的请求，通常参数校验不通过均为 400
+    - `error`：HTTP 返回的错误描述，这里对应的就是 400 状态的错误描述：Bad Request
+    - `errors`：具体错误原因，是一个数组类型；因为错误校验可能存在多个字段的错误，比如这里因为定义了两个参数不能为`Null`，所以存在两条错误记录信息
+    - `message`：概要错误消息，返回内容中很容易可以知道，这里的错误原因是对 user 对象的校验失败，其中错误数量为`2`，而具体的错误信息就定义在上面的`errors`数组中
+    - `path`：请求路径
 
 #### 3 依赖库
 
@@ -450,15 +453,13 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
 </dependency>
 ```
 
-
-
 ## 4 数据库操作
 
-### 4.1 使用JdbcTemplate访问MySQL数据库
+### 4.1 使用 JdbcTemplate 访问 MySQL 数据库
 
 #### 1 数据源配置
 
-1. 为了连接数据库需要引入jdbc支持，在`pom.xml`中引入如下配置
+1. 为了连接数据库需要引入 jdbc 支持，在`pom.xml`中引入如下配置
 
    ```xml
    <dependency>
@@ -477,7 +478,7 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
    </dependency>
    ```
 
-3. 独立数据库MySql
+3. 独立数据库 MySql
 
    pom.xml
 
@@ -497,7 +498,7 @@ JSR-303 是JAVA EE 6 中的一项子规范，叫做Bean Validation，Hibernate V
    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
    ```
 
-#### 2 使用JdbcTemplate
+#### 2 使用 JdbcTemplate
 
 ##### 1 领域对象
 
@@ -512,34 +513,34 @@ public class User {
 }
 ```
 
-使用了Lombok的`@Data`和`@NoArgsConstructor`注解来自动生成各参数的Set、Get函数以及不带参数的构造函数
+使用了 Lombok 的`@Data`和`@NoArgsConstructor`注解来自动生成各参数的 Set、Get 函数以及不带参数的构造函数
 
-##### 2 编写Service interface
+##### 2 编写 Service interface
 
 ```java
 public interface UserService {
 
-  
+
     int create(String name, Integer age);
 
-    
+
     List<User> getByName(String name);
 
-    
+
     int deleteByName(String name);
 
-    
+
     int getAllUsers();
 
-    
+
     int deleteAllUsers();
 
 }
 ```
 
-##### 3 编写Service的实现，注入JdbcTemplate
+##### 3 编写 Service 的实现，注入 JdbcTemplate
 
-Spring Boot下访问数据库的配置依然秉承了框架的初衷：简单。`不需要像Spring应用中创建JdbcTemplate的Bean`，就可以直接在自己的对象中注入使用
+Spring Boot 下访问数据库的配置依然秉承了框架的初衷：简单。`不需要像Spring应用中创建JdbcTemplate的Bean`，就可以直接在自己的对象中注入使用
 
 ```java
 @Service
@@ -584,9 +585,9 @@ public class UserServiceImpl implements UserService {
 }
 ```
 
-### 4.2 使用MyBatis访问MySQL
+### 4.2 使用 MyBatis 访问 MySQL
 
-#### 1 整合MyBatis
+#### 1 整合 MyBatis
 
 pom.xml
 
@@ -614,7 +615,7 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 #### 2 使用
 
-##### 1 创建映射对象User
+##### 1 创建映射对象 User
 
 ```java
 @Data
@@ -633,7 +634,7 @@ public class User {
 }
 ```
 
-##### 2 创建Mapper Interface
+##### 2 创建 Mapper Interface
 
 ```java
 @Mapper
@@ -648,7 +649,7 @@ public interface UserMapper {
 }
 ```
 
-##### 3 创建Spring Boot 主类
+##### 3 创建 Spring Boot 主类
 
 ```java
 @SpringBootApplication
@@ -692,9 +693,9 @@ public class Chapter35ApplicationTests {
 int insert(@Param("name") String name, @Param("age") Integer age);
 ```
 
-`@Param`中定义的`name`对应了SQL中的`#{name}`，`age`对应了SQL中的`#{age}`
+`@Param`中定义的`name`对应了 SQL 中的`#{name}`，`age`对应了 SQL 中的`#{age}`
 
-##### 2 使用Map
+##### 2 使用 Map
 
 ```java
 @Insert("INSERT INTO USER(NAME, AGE) VALUES(#{name,jdbcType=VARCHAR}, #{age,jdbcType=INTEGER})")
@@ -714,7 +715,7 @@ userMapper.insertByMap(map);
 int insertByUser(User user);
 ```
 
-`#{name}`、`#{age}`就分别对应了User对象中的`name`和`age`属性
+`#{name}`、`#{age}`就分别对应了 User 对象中的`name`和`age`属性
 
 ##### 4 完整的增删改查
 
@@ -746,11 +747,11 @@ public interface UserMapper {
 List<User> findAll();
 ```
 
-`@Result`中的`property`属性对应User对象中的成员名，`column`对应SELECT出的字段名
+`@Result`中的`property`属性对应 User 对象中的成员名，`column`对应 SELECT 出的字段名
 
-### 4.3 使用MyBatis的XML配置方式
+### 4.3 使用 MyBatis 的 XML 配置方式
 
-#### 1 在应用主类中增加mapper的扫描包配置
+#### 1 在应用主类中增加 mapper 的扫描包配置
 
 ```java
 @MapperScan("com.didispace.chapter36.mapper")
@@ -764,7 +765,7 @@ public class Chapter36Application {
 }
 ```
 
-#### 2 创建Map Interface
+#### 2 创建 Map Interface
 
 ```java
 public interface UserMapper {
@@ -776,13 +777,13 @@ public interface UserMapper {
 }
 ```
 
-#### 3 application.properties指定xml配置
+#### 3 application.properties 指定 xml 配置
 
 ```properties
 mybatis.mapper-locations=classpath:mapper/*.xml
 ```
 
-####  4 创建xml文件
+#### 4 创建 xml 文件
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -800,35 +801,35 @@ mybatis.mapper-locations=classpath:mapper/*.xml
 </mapper>
 ```
 
-### 4.4 Mabatis事务用法
+### 4.4 Mabatis 事务用法
 
-#### 1 @Options选项属性
+#### 1 @Options 选项属性
 
 ```java
 @Options(useGeneratedKeys = true, keyProperty = "userId")  //获得主键返回值
 //其他属性
 useCache=true
 //为true时表示本条语句将进行二级缓存，仅在select下使用，select下默认为true
-    
-flushCache=false 
+
+flushCache=false
 //为true时表示调用任何语句将清空本地缓存和耳机缓存，为flase时不会
 //select时默认为false，insert、update、delete时默认为true
-    
+
 resultSetType=FORWARD_ONLY
 //resultSetType设置结果集的游标怎么滚动
-//FORWARD_ONLY表示结果集的游标只能向下移动 
+//FORWARD_ONLY表示结果集的游标只能向下移动
 //SCROLL_INSENSITIVE和SCROLL_SENSITIVE都能实现任意前后滚动，区别在于前者对于修改敏感，后者对于修改不敏感
-    
+
 statementType=PREPARED
 //是否预编译
 //STATEMENT 静态SQL
 //PREPARED 动态SQL，一次编译，多次执行，可以防止SQL注入
-//CALLABLE 动态SQL，支持调用存储过程（还提供了些其他的支持？） 	
+//CALLABLE 动态SQL，支持调用存储过程（还提供了些其他的支持？）
 
 fetchSize= -1
 //每次读取多少行数据，-1或不设置：驱动来决定
 
-timeout=-1 
+timeout=-1
 //设置驱动程序等待数据库返回请求结果，并抛出异常时间的最大等待值，-1或不设置：驱动来决定
 
 useGeneratedKeys=false
@@ -841,43 +842,43 @@ keyProperty="userId"
 
 #### 2 @MapperScan 和 @Mapper
 
-在不使用@MapperScan前，我们需要直接在Mapper类上面添加注解@Mapper，这种方式要求每一个Mapper类都需要添加此注解，非常麻烦，属于重复劳动。通过使用@MapperScan注解，可以让我们不用为每个Mapper类都添加@Mapper注解。
+在不使用@MapperScan 前，我们需要直接在 Mapper 类上面添加注解@Mapper，这种方式要求每一个 Mapper 类都需要添加此注解，非常麻烦，属于重复劳动。通过使用@MapperScan 注解，可以让我们不用为每个
+Mapper 类都添加@Mapper 注解。
 
 ```java
 @SpringBootApplication
 @MapperScan("cn.mybatis.mappers","cn.mybatis.mappers.student")
 public class SpringbootMybatisDemoApplication {
- 
+
     public static void main(String[] args) {
         SpringApplication.run(SpringbootMybatisDemoApplication.class, args);
     }
 }
 ```
 
-添加@MapperScan("cn.mybatis.mappers")注解以后，cn.mybatis.mappers包下面的接口类，在编译之后都会生成相应的实现类
+添加@MapperScan("cn.mybatis.mappers")注解以后，cn.mybatis.mappers 包下面的接口类，在编译之后都会生成相应的实现类
 
-另外，使用@MapperScan注解可以作用到多个包
+另外，使用@MapperScan 注解可以作用到多个包
 
 #### 3 事务管理
 
-添加mybatis-spring-boot-starter依赖时已经加入了事务处理的jar包：spring-tx.jar
-在入口处添加@EnableTransactionManagement注解开始事务控制
+添加 mybatis-spring-boot-starter 依赖时已经加入了事务处理的 jar 包：spring-tx.jar 在入口处添加@EnableTransactionManagement 注解开始事务控制
 
 ```java
 @Controller
- 
+
 @MapperScan("com.fc.mybatistest.mapper")
 @EnableTransactionManagement
 @SpringBootApplication
 public class MybatistestApplication {
-	
+
 	@Autowired
 	private UserService userService;
- 
+
 	public static void main(String[] args) {
 		SpringApplication.run(MybatistestApplication.class, args);
 	}
-	
+
 	@RequestMapping("/")
 	public String findAll(Model model){
 			...
@@ -891,10 +892,10 @@ public class MybatistestApplication {
 
 @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=36000,rollbackFor=Exception.class)
 public class UserServiceimpl implements UserService {
- 
+
 	@Autowired
 	private UserMapper userMapper;
-	
+
 	@Override
 	public List<User> findAll() {
 		return userMapper.findAll();
@@ -902,51 +903,48 @@ public class UserServiceimpl implements UserService {
 }
 ```
 
-##### @Transactional各个属性含义
+##### @Transactional 各个属性含义
 
 propagation --事务传播行为
 含有以下值：
 
-| PROPAGATION_REQUIRED      | 如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。这是默认值。 |
-| ------------------------- | ------------------------------------------------------------ |
-| PROPAGATION_REQUIRES_NEW  | 创建一个新的事务，如果当前存在事务，则把当前事务挂起。       |
-| PROPAGATION_NOT_SUPPORTED | 以非事务方式运行，如果当前存在事务，则把当前事务挂起。       |
-| PROPAGATION_NEVER         | 以非事务方式运行，如果当前存在事务，则抛出异常。             |
-| PROPAGATION_MANDATORY     | 如果当前存在事务，则加入该事务；如果当前没有事务，则抛出异常。 |
-| PROPAGATION_NESTED        | 如果当前存在事务，则创建一个事务作为当前事务的嵌套事务来运行；如果当前没有事务，则该取值等价于TransactionDefinition.PROPAGATION_REQUIRED。 |
+| PROPAGATION_REQUIRED      | 如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。这是默认值。                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| PROPAGATION_REQUIRES_NEW  | 创建一个新的事务，如果当前存在事务，则把当前事务挂起。                                                                                      |
+| PROPAGATION_NOT_SUPPORTED | 以非事务方式运行，如果当前存在事务，则把当前事务挂起。                                                                                      |
+| PROPAGATION_NEVER         | 以非事务方式运行，如果当前存在事务，则抛出异常。                                                                                            |
+| PROPAGATION_MANDATORY     | 如果当前存在事务，则加入该事务；如果当前没有事务，则抛出异常。                                                                              |
+| PROPAGATION_NESTED        | 如果当前存在事务，则创建一个事务作为当前事务的嵌套事务来运行；如果当前没有事务，则该取值等价于 TransactionDefinition.PROPAGATION_REQUIRED。 |
 
 isolation --事务隔离级别
 含有以下值：
 
-| ISOLATION_DEFAULT          | 这是默认值，表示使用底层数据库的默认隔离级别。对大部分数据库而言，通常这值就是READ_COMMITTED |
-| -------------------------- | ------------------------------------------------------------ |
-| ISOLATION_READ_UNCOMMITTED | 该隔离级别表示一个事务可以读取另一个事务修改但还没有提交的数据。该级别不能防止脏读，不可重复读和幻读，因此很少使用该隔离级别。比如PostgreSQL实际上并没有此级别 |
-| ISOLATION_READ_COMMITTED   | 该隔离级别表示一个事务只能读取另一个事务已经提交的数据。该级别可以防止脏读，这也是大多数情况下的推荐值 |
-| ISOLATION_REPEATABLE_READ  | 该隔离级别表示一个事务在整个过程中可以多次重复执行某个查询，并且每次返回的记录都相同。该级别可以防止脏读和不可重复读 |
+| ISOLATION_DEFAULT          | 这是默认值，表示使用底层数据库的默认隔离级别。对大部分数据库而言，通常这值就是 READ_COMMITTED                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ISOLATION_READ_UNCOMMITTED | 该隔离级别表示一个事务可以读取另一个事务修改但还没有提交的数据。该级别不能防止脏读，不可重复读和幻读，因此很少使用该隔离级别。比如 PostgreSQL 实际上并没有此级别   |
+| ISOLATION_READ_COMMITTED   | 该隔离级别表示一个事务只能读取另一个事务已经提交的数据。该级别可以防止脏读，这也是大多数情况下的推荐值                                                             |
+| ISOLATION_REPEATABLE_READ  | 该隔离级别表示一个事务在整个过程中可以多次重复执行某个查询，并且每次返回的记录都相同。该级别可以防止脏读和不可重复读                                               |
 | ISOLATION_SERIALIZABLE     | 所有的事务依次逐个执行，这样事务之间就完全不可能产生干扰，也就是说，该级别可以防止脏读、不可重复读以及幻读。但是这将严重影响程序的性能。通常情况下也不会用到该级别 |
-
 
 timeout --事务超时
 
-
 readOnly --读写或只读事务
-
 
 rollbackFor --指定特定异常实例，遇到时数据回滚
 
-
 rollbackForClassname--指定特定异常名，遇到时数据回滚
-
 
 norollbackFor --指定特定异常实例，遇到时数据不会回滚
 
 norollbackForClassname--指定特定异常名，遇到时数据不会回滚
 
-## 5 Java开发神器Lombok的使用与原理
+## 5 Java 开发神器 Lombok 的使用与原理
 
-### 1 Lombok的简介
+### 1 Lombok 的简介
 
-Lombok是一款Java开发插件，使得Java开发者可以通过其定义的一些注解来消除业务工程中冗长和繁琐的代码，尤其对于简单的Java模型对象（POJO）。在开发环境中使用Lombok插件后，Java开发人员可以节省出重复构建，诸如hashCode和equals这样的方法以及各种业务对象模型的accessor和ToString等方法的大量时间。对于这些方法，它能够在编译源代码期间自动帮我们生成这些方法，并没有如反射那样降低程序的性能
+Lombok 是一款 Java 开发插件，使得 Java 开发者可以通过其定义的一些注解来消除业务工程中冗长和繁琐的代码，尤其对于简单的 Java 模型对象（POJO）。在开发环境中使用 Lombok 插件后，Java
+开发人员可以节省出重复构建，诸如 hashCode 和 equals 这样的方法以及各种业务对象模型的 accessor 和 ToString
+等方法的大量时间。对于这些方法，它能够在编译源代码期间自动帮我们生成这些方法，并没有如反射那样降低程序的性能
 
 pom.xml
 
@@ -958,13 +956,13 @@ pom.xml
 </dependency>
 ```
 
-IDEA里需要在设置中启用Build->Compiler->annotation processors
+IDEA 里需要在设置中启用 Build->Compiler->annotation processors
 
-### 2 Lombok常用注解
+### 2 Lombok 常用注解
 
-#### 1 Val 
+#### 1 Val
 
-可以将变量申明是final类型
+可以将变量申明是 final 类型
 
 ```java
 public   static void main(String[] args) {
@@ -981,7 +979,7 @@ public   static void main(String[] args) {
 }
 ```
 
-#### 2 @NonNull 
+#### 2 @NonNull
 
 注解能够为方法或构造函数的参数提供非空检查
 
@@ -1001,7 +999,7 @@ public void notNullExample(String string) {
 }
 ```
 
-#### 3 @Cleanup 
+#### 3 @Cleanup
 
 能够自动释放资源
 
@@ -1031,9 +1029,9 @@ public   void jedisExample(String[] args) {
 }
 ```
 
-#### 4  @Getter/@Setter
+#### 4 @Getter/@Setter
 
-可以针对类的属性字段自动生成Get/Set方法
+可以针对类的属性字段自动生成 Get/Set 方法
 
 ```java
 public class OrderCreateDemoReq{
@@ -1048,7 +1046,7 @@ public class OrderCreateDemoReq{
 //上面请求Req类的代码相当于如下：
 
 public class OrderCreateDemoReq{
-    private String customerId;    
+    private String customerId;
 
     public String getCustomerId(){
          return customerId;
@@ -1060,9 +1058,9 @@ public class OrderCreateDemoReq{
 }
 ```
 
-#### 5  @ToString 
+#### 5 @ToString
 
-为使用该注解的类生成一个toString方法，默认的toString格式为：ClassName(fieldName= fieleValue ,fieldName1=fieleValue)
+为使用该注解的类生成一个 toString 方法，默认的 toString 格式为：ClassName(fieldName= fieleValue ,fieldName1=fieleValue)
 
 ```java
 @ToString(callSuper=true,exclude="someExcludedField")
@@ -1077,7 +1075,7 @@ public   class Demo extends Bar {
     private boolean someBoolean = true;
     private String someStringField;
     private float someExcludedField;
-   
+
     @ Override
     public String toString() {
         return "Foo(super=" +   super.toString() +
@@ -1089,7 +1087,7 @@ public   class Demo extends Bar {
 
 #### 6 @EqualsAndHashCode
 
-为使用该注解的类自动生成equals和hashCode方法
+为使用该注解的类自动生成 equals 和 hashCode 方法
 
 ```java
 @EqualsAndHashCode(exclude = {"id"}, callSuper =true)
@@ -1105,7 +1103,7 @@ public class LombokDemo extends Demo{
     private int id;
     private String name;
     private String gender;
-    
+
     @Override
     public boolean equals(final Object o) {
         if (o == this) return true;
@@ -1136,68 +1134,68 @@ public class LombokDemo extends Demo{
 这几个注解分别为类自动生成了无参构造器、指定参数的构造器和包含所有参数的构造器
 
 ```java
-@RequiredArgsConstructor(staticName = "of") 
-@AllArgsConstructor(access = AccessLevel.PROTECTED) 
-public class ConstructorExample<T> { 
+@RequiredArgsConstructor(staticName = "of")
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+public class ConstructorExample<T> {
 
-  private int x, y; 
-  @NonNull private T description; 
-  
-  @NoArgsConstructor 
-  public static class NoArgsExample { 
-    @NonNull private String field; 
-  } 
+  private int x, y;
+  @NonNull private T description;
+
+  @NoArgsConstructor
+  public static class NoArgsExample {
+    @NonNull private String field;
+  }
 
 }
 
 //上面代码相当于如下：
-@RequiredArgsConstructor(staticName = "of") 
-@AllArgsConstructor(access = AccessLevel.PROTECTED) 
-public class ConstructorExample<T> { 
+@RequiredArgsConstructor(staticName = "of")
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+public class ConstructorExample<T> {
 
-  private int x, y; 
-  @NonNull private T description; 
+  private int x, y;
+  @NonNull private T description;
 
-  @NoArgsConstructor 
-  public static class NoArgsExample { 
-    @NonNull private String field; 
-  } 
+  @NoArgsConstructor
+  public static class NoArgsExample {
+    @NonNull private String field;
+  }
 
 }
 
-public class ConstructorExample<T> { 
-  private int x, y; 
-  @NonNull private T description; 
+public class ConstructorExample<T> {
+  private int x, y;
+  @NonNull private T description;
 
-  private ConstructorExample(T description) { 
-    if (description == null) throw new NullPointerException("description"); 
-    this.description = description; 
-  } 
+  private ConstructorExample(T description) {
+    if (description == null) throw new NullPointerException("description");
+    this.description = description;
+  }
 
-  public static <T> ConstructorExample<T> of(T description) { 
-    return new ConstructorExample<T>(description); 
-  } 
+  public static <T> ConstructorExample<T> of(T description) {
+    return new ConstructorExample<T>(description);
+  }
 
-  @java.beans.ConstructorProperties({"x", "y", "description"}) 
-  protected ConstructorExample(int x, int y, T description) { 
-    if (description == null) throw new NullPointerException("description"); 
-    this.x = x; 
-    this.y = y; 
-    this.description = description; 
-  } 
-  
-  public static class NoArgsExample { 
+  @java.beans.ConstructorProperties({"x", "y", "description"})
+  protected ConstructorExample(int x, int y, T description) {
+    if (description == null) throw new NullPointerException("description");
+    this.x = x;
+    this.y = y;
+    this.description = description;
+  }
+
+  public static class NoArgsExample {
     @NonNull private String field;
-    
-    public NoArgsExample() { 
-    } 
-  } 
+
+    public NoArgsExample() {
+    }
+  }
 }
 ```
 
 #### 8 @Data
 
-注解作用比较全，其包含注解的集合`@ToString`，`@EqualsAndHashCode`，所有字段的`@Getter`和所有非final字段的`@Setter`, `@RequiredArgsConstructor`
+注解作用比较全，其包含注解的集合`@ToString`，`@EqualsAndHashCode`，所有字段的`@Getter`和所有非 final 字段的`@Setter`, `@RequiredArgsConstructor`
 
 #### 9 @Builder
 
@@ -1232,50 +1230,50 @@ public class Room {
 
 #### 10 @Synchronized
 
-类似Java中的Synchronized 关键字，但是可以隐藏同步锁
+类似 Java 中的 Synchronized 关键字，但是可以隐藏同步锁
 
-````java
-public class SynchronizedExample { 
+```java
+public class SynchronizedExample {
 
- private final Object readLock = new   Object(); 
+ private final Object readLock = new   Object();
 
- @Synchronized 
- public static void hello() { 
-     System.out.println("world");   
- } 
+ @Synchronized
+ public static void hello() {
+     System.out.println("world");
+ }
 
- @Synchronized("readLock") 
- public void foo() { 
-   System.out.println("bar"); 
- } 
+ @Synchronized("readLock")
+ public void foo() {
+   System.out.println("bar");
+ }
 
 //上面代码相当于如下：
 
- public class SynchronizedExample { 
+ public class SynchronizedExample {
 
-  private static final Object $LOCK = new   Object[0]; 
-  private final Object readLock = new   Object(); 
+  private static final Object $LOCK = new   Object[0];
+  private final Object readLock = new   Object();
 
-  public static void hello() { 
-    synchronized($LOCK) { 
-      System.out.println("world"); 
-    } 
-  }   
+  public static void hello() {
+    synchronized($LOCK) {
+      System.out.println("world");
+    }
+  }
 
-  public void foo() { 
-    synchronized(readLock) { 
-        System.out.println("bar");   
-    } 
-  } 
+  public void foo() {
+    synchronized(readLock) {
+        System.out.println("bar");
+    }
+  }
 
 }
-````
+```
 
 ## 6 日志管理
 
-### 6.1 使用Slf4j
+### 6.1 使用 Slf4j
 
-英文全称：Simple Logging Facade for Java，即：简单日志门面，它并不是一个具体的日志解决方案，实际工作的还是Logback或Log4j这样的日志框架
+英文全称：Simple Logging Facade for Java，即：简单日志门面，它并不是一个具体的日志解决方案，实际工作的还是 Logback 或 Log4j 这样的日志框架
 
 ```java
 @Slf4j
@@ -1294,27 +1292,28 @@ public class Application {
 }
 ```
 
-这里我们通过在`pom.xml`中引入了Lombok，然后使用`@Slf4j`声明引入Slf4j的`log`日志记录对象。而这个日志具体是如何写到控制台或者文件的，则有Spring Boot项目中引入了什么具体的日志框架决定，默认情况下就是Logback
+这里我们通过在`pom.xml`中引入了 Lombok，然后使用`@Slf4j`声明引入 Slf4j 的`log`日志记录对象。而这个日志具体是如何写到控制台或者文件的，则有 Spring Boot
+项目中引入了什么具体的日志框架决定，默认情况下就是 Logback
 
 ### 6.2 日志显示
 
-启动任意一个Spring Boot项目，我们都可以在控制台看到很多日志信息，比如下面这样的一条日志：
+启动任意一个 Spring Boot 项目，我们都可以在控制台看到很多日志信息，比如下面这样的一条日志：
 
-[![img](../image/Spring Boot 2.x基础教程/pasted-817.png)](https://blog.didispace.com/images/pasted-817.png)
+[![img](../image/Spring Boot 2.x 基础教程/pasted-817.png)](https://blog.didispace.com/images/pasted-817.png)
 
-日志的输出内容中一共有7种元素，具体如下：
+日志的输出内容中一共有 7 种元素，具体如下：
 
 1. 时间日期：精确到毫秒
 2. 日志级别：ERROR, WARN, INFO, DEBUG or TRACE
-3. 进程ID
+3. 进程 ID
 4. 分隔符：`---` 标识实际日志的开始
 5. 线程名：方括号括起来（可能会截断控制台输出）
-6. Logger名：通常使用源代码的类名
+6. Logger 名：通常使用源代码的类名
 7. 日志内容
 
 ### 6.3 日志输出
 
-在Spring Boot应用中，日志会默认会输出到控制台中，默认的输出日志级别包含：`ERROR`、`WARN`和`INFO`
+在 Spring Boot 应用中，日志会默认会输出到控制台中，默认的输出日志级别包含：`ERROR`、`WARN`和`INFO`
 
 我们可以通过两种方式切换至`DEBUG`级别：
 
@@ -1328,9 +1327,9 @@ public class Application {
 
 通过在`application.properties`中设置`spring.output.ansi.enabled`参数来支持，该参数有三个选项：
 
-- NEVER：禁用ANSI-colored输出
-- DETECT：会检查终端是否支持ANSI，是的话就采用彩色输出（默认项）
-- ALWAYS：总是使用ANSI-colored格式输出，若终端不支持的时候，会有很多干扰信息，不推荐使用
+- NEVER：禁用 ANSI-colored 输出
+- DETECT：会检查终端是否支持 ANSI，是的话就采用彩色输出（默认项）
+- ALWAYS：总是使用 ANSI-colored 格式输出，若终端不支持的时候，会有很多干扰信息，不推荐使用
 
 #### 2 文件输出
 
@@ -1346,28 +1345,28 @@ logging.file.path=./
 
 #### 3 文件滚动
 
-一直把日志输出在一个文件里显然是不合适的，任何一个日志框架都会为此准备日志文件的滚动配置。由于本篇将默认配置，所以就是Logback的配置，具体有这几个：
+一直把日志输出在一个文件里显然是不合适的，任何一个日志框架都会为此准备日志文件的滚动配置。由于本篇将默认配置，所以就是 Logback 的配置，具体有这几个：
 
 - `logging.logback.rollingpolicy.file-name-pattern`：用于创建日志档案的文件名模式。
-- `logging.logback.rollingpolicy.clean-history-on-start`：应用程序启动时是否对进行日志归档清理，默认为false，不清理
-- `logging.logback.rollingpolicy.max-history`：要保留的最大归档日志文件数量，默认为7个
-- `logging.logback.rollingpolicy.max-file-size`：归档前日志文件的最大尺寸，默认为10MB
-- `logging.logback.rollingpolicy.total-size-cap`：日志档案在被删除前的最大容量，默认为0B
+- `logging.logback.rollingpolicy.clean-history-on-start`：应用程序启动时是否对进行日志归档清理，默认为 false，不清理
+- `logging.logback.rollingpolicy.max-history`：要保留的最大归档日志文件数量，默认为 7 个
+- `logging.logback.rollingpolicy.max-file-size`：归档前日志文件的最大尺寸，默认为 10MB
+- `logging.logback.rollingpolicy.total-size-cap`：日志档案在被删除前的最大容量，默认为 0B
 
 #### 4 级别控制
 
-如果要对各个Logger做一些简单的输出级别控制，那么只需要在`application.properties`中进行配置就能完成。
+如果要对各个 Logger 做一些简单的输出级别控制，那么只需要在`application.properties`中进行配置就能完成。
 
 配置格式：`logging.level.*=LEVEL`
 
-- `logging.level`：日志级别控制前缀，`*`为包名或Logger名
-- `LEVEL`：选项TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
+- `logging.level`：日志级别控制前缀，`*`为包名或 Logger 名
+- `LEVEL`：选项 TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
 
-### 6.5 使用Log4j2
+### 6.5 使用 Log4j2
 
 #### 1 pom.xml
 
-在`pom.xml`中引入Log4j2的Starter依赖`spring-boot-starter-log4j2`，同时排除默认引入的`spring-boot-starter-logging`
+在`pom.xml`中引入 Log4j2 的 Starter 依赖`spring-boot-starter-log4j2`，同时排除默认引入的`spring-boot-starter-logging`
 
 ```xml
 <dependency>
@@ -1389,13 +1388,13 @@ logging.file.path=./
 
 #### 2 application.properties
 
-通过`logging.config`配置指定log4j2的配置文件位置
+通过`logging.config`配置指定 log4j2 的配置文件位置
 
 ```properties
 logging.config=classpath:log4j2.xml
 ```
 
-#### 3 resource下新建log4j2.xml
+#### 3 resource 下新建 log4j2.xml
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -1413,17 +1412,18 @@ logging.config=classpath:log4j2.xml
 </Configuration>
 ```
 
-## 7 使用LDAP
+## 7 使用 LDAP
 
-### 7.1 LDAP简介
+### 7.1 LDAP 简介
 
 LDAP - entry - DN(key)
 
-​					- 其他属性(type): value
+​ - 其他属性(type): value
 
-LDAP的信息是以树型结构存储的，在树根一般定义国家(c=CN)或域名(dc=com)，在其下则往往定义一个或多个组织 (organization)(o=Acme)或组织单元(organizational units) (ou=People)
+LDAP 的信息是以树型结构存储的，在树根一般定义国家(c=CN)或域名(dc=com)，在其下则往往定义一个或多个组织 (organization)(o=Acme)或组织单元(organizational units) (
+ou=People)
 
-**LDAP简称对应**
+**LDAP 简称对应**
 
 - o：organization（组织-公司）
 - ou：organization unit（组织单元-部门）
@@ -1449,9 +1449,9 @@ pom.xml
 </dependency>
 ```
 
-`spring-boot-starter-data-ldap`是Spring Boot封装的对LDAP自动化配置的实现，它是基于spring-data-ldap来对LDAP服务端进行具体操作的。
+`spring-boot-starter-data-ldap`是 Spring Boot 封装的对 LDAP 自动化配置的实现，它是基于 spring-data-ldap 来对 LDAP 服务端进行具体操作的。
 
-而`unboundid-ldapsdk`主要是为了在这里使用嵌入式的LDAP服务端来进行测试操作
+而`unboundid-ldapsdk`主要是为了在这里使用嵌入式的 LDAP 服务端来进行测试操作
 
 src/test/resources/ldap-server.ldif
 
@@ -1478,14 +1478,14 @@ uid: didi
 userPassword: {SHA}nFCebWjxfaLbHHG1Qk5UU4trbvQ=
 ```
 
-`application.properties`中添加嵌入式LDAP的配置
+`application.properties`中添加嵌入式 LDAP 的配置
 
 ```properties
 spring.ldap.embedded.ldif=classpath:ldap-server.ldif
 spring.ldap.embedded.base-dn=dc=didispace,dc=com
 ```
 
-使用spring-data-ldap的基础用法，定义LDAP中属性与我们Java中定义实体的关系映射以及对应的Repository
+使用 spring-data-ldap 的基础用法，定义 LDAP 中属性与我们 Java 中定义实体的关系映射以及对应的 Repository
 
 ```java
 @Data
@@ -1505,7 +1505,7 @@ public class Person {
 }
 
 public interface PersonRepository extends CrudRepository<Person, Name> {
-	
+
 }
 ```
 
@@ -1539,7 +1539,7 @@ person.setUserPassword("123456");
 personRepository.save(person);
 ```
 
-连接LDAP服务器
+连接 LDAP 服务器
 
 ```properties
 spring.ldap.urls=ldap://localhost:1235
@@ -1548,9 +1548,4 @@ spring.ldap.username=didispace
 spring.ldap.password=123456
 ```
 
-
-
-
-
 {% endraw %}
-

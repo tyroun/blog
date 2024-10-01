@@ -1,12 +1,8 @@
 {% raw %}
 
-# Web播放器开发相关
+# Web 播放器开发相关
 
 ## 一 WASM
-
-
-
-
 
 ## 二 Web Worker
 
@@ -32,9 +28,10 @@ Worker 线程一旦新建成功，就会始终运行，不会被主线程上的�
 
   分配给 Worker 线程运行的脚本文件，必须与主线程的脚本文件同源。
 
-- DOM限制
+- DOM 限制
 
-  Worker 线程所在的全局对象，与主线程不一样，无法读取主线程所在网页的 DOM 对象，也无法使用`document`、`window`、`parent`这些对象。但是，Worker 线程可以`navigator`对象和`location`对象。
+  Worker 线程所在的全局对象，与主线程不一样，无法读取主线程所在网页的 DOM 对象，也无法使用`document`、`window`、`parent`这些对象。但是，Worker 线程可以`navigator`
+  对象和`location`对象。
 
 - 通信联系
 
@@ -48,9 +45,9 @@ Worker 线程一旦新建成功，就会始终运行，不会被主线程上的�
 
   Worker 线程无法读取本地文件，即不能打开本机的文件系统（`file://`），它所加载的脚本，必须来自网络。
 
-#### 1.3 Web Worker作用域
+#### 1.3 Web Worker 作用域
 
-Web Worker所执行的 js 代码完全在另一作用域中，与当前主线程的代码不共享作用域。在 Web Worker 中，同样有一个全局对象和其他对象以及方法，但其代码无法访问 DOM，也不能影响页面的外观。
+Web Worker 所执行的 js 代码完全在另一作用域中，与当前主线程的代码不共享作用域。在 Web Worker 中，同样有一个全局对象和其他对象以及方法，但其代码无法访问 DOM，也不能影响页面的外观。
 
 Web Worker 中的全局对象是 worker 对象本身，即 `this` 和 `self` 引用的都是 worker 对象，`this` 完全可以换成 `self`，甚至可以省略。
 
@@ -61,9 +58,9 @@ Web Worker 中的全局对象是 worker 对象本身，即 `this` 和 `self` 引
 - `setTimeout()`, `setInterval()`, `clearTimeout()`, `clearInterval()` 方法
 - `XMLHttpRequest` 构造函数
 
-### 2. API介绍
+### 2. API 介绍
 
-#### 2.1 主线程里面API
+#### 2.1 主线程里面 API
 
 浏览器原生提供`Worker()`构造函数，用来供主线程生成 Worker 线程。
 
@@ -75,10 +72,10 @@ var myWorker = new Worker(jsUrl, options);
 
 ```js
 // 主线程 文件中
-var myWorker = new Worker('worker.js', { name : 'myWorker' });
+var myWorker = new Worker("worker.js", {name: "myWorker"});
 
 // Worker 线程文件中
-self.name // myWorker
+self.name; // myWorker
 ```
 
 `Worker()`构造函数返回一个 Worker 线程对象，用来供主线程操作 Worker。Worker 线程对象的属性和方法如下：
@@ -89,7 +86,7 @@ self.name // myWorker
 - Worker.postMessage()：向 Worker 线程发送消息。
 - Worker.terminate()：立即终止 Worker 线程。
 
-#### 2.2 Worker线程里面API
+#### 2.2 Worker 线程里面 API
 
 Web Worker 有自己的全局对象，不是主线程的`window`，而是一个专门为 Worker 定制的全局对象。因此定义在`window`上面的对象和方法不是全部都可以使用。
 
@@ -108,10 +105,11 @@ Worker 线程有一些自己的全局属性和方法：
 
 1、创建一个子线程：
 
-主线程调用`Worker()`构造函数，新建一个 Worker 线程。构造函数参数是一个脚本文件，该文件就是 Worker 线程要执行的任务。Worker 不能读取本地文件，所以必须来自网络。如果下载失败(比如404)，Worker 就会默默地失败。
+主线程调用`Worker()`构造函数，新建一个 Worker 线程。构造函数参数是一个脚本文件，该文件就是 Worker 线程要执行的任务。Worker 不能读取本地文件，所以必须来自网络。如果下载失败(比如 404)，Worker
+就会默默地失败。
 
 ```js
-var worker = new Worker('work.js');
+var worker = new Worker("work.js");
 ```
 
 2、发送数据给子线程：
@@ -119,8 +117,8 @@ var worker = new Worker('work.js');
 然后，主线程调用`worker.postMessage()`方法，向 Worker 发消息。该方法的参数，就是主线程传给 Worker 的数据。它可以是各种数据类型，包括二进制数据。
 
 ```js
-worker.postMessage('Hello World');
-worker.postMessage({method: 'echo', args: ['Work']});
+worker.postMessage("Hello World");
+worker.postMessage({method: "echo", args: ["Work"]});
 ```
 
 3、监听子线程发送的数据
@@ -129,13 +127,13 @@ worker.postMessage({method: 'echo', args: ['Work']});
 
 ```js
 worker.onmessage = function (event) {
-  console.log('Received message ' + event.data);
-  doSomething();
-}
+    console.log("Received message " + event.data);
+    doSomething();
+};
 
 function doSomething() {
-  // 执行任务
-  worker.postMessage('Work done!');
+    // 执行任务
+    worker.postMessage("Work done!");
 }
 ```
 
@@ -153,14 +151,14 @@ worker.terminate();
 
 ```js
 worker.onerror(function (event) {
-  console.log([
-    'ERROR: Line ', e.lineno, ' in ', e.filename, ': ', e.message
-  ].join(''));
+    console.log(
+        ["ERROR: Line ", e.lineno, " in ", e.filename, ": ", e.message].join("")
+    );
 });
 
 // 或者
-worker.addEventListener('error', function (event) {
-  // ...
+worker.addEventListener("error", function (event) {
+    // ...
 });
 ```
 
@@ -173,24 +171,36 @@ Worker 内部也可以监听`error`事件。
 Worker 子线程内部需要有一个监听函数，监听`message`事件。`self`代表子线程自身，即子线程的全局对象。因此，等同于`this`或者直接使用：
 
 ```js
-self.addEventListener('message', function (e) {
-  self.postMessage('You said: ' + e.data);
-}, false);
+self.addEventListener(
+    "message",
+    function (e) {
+        self.postMessage("You said: " + e.data);
+    },
+    false
+);
 
 // 写法一
-this.addEventListener('message', function (e) {
-  this.postMessage('You said: ' + e.data);
-}, false);
+this.addEventListener(
+    "message",
+    function (e) {
+        this.postMessage("You said: " + e.data);
+    },
+    false
+);
 
 // 写法二
-addEventListener('message', function (e) {
-  postMessage('You said: ' + e.data);
-}, false);
+addEventListener(
+    "message",
+    function (e) {
+        postMessage("You said: " + e.data);
+    },
+    false
+);
 
 // 另外一种直接写方法
 onmessage = function (e) {
-  const { data } = e;
-  console.log('data: ', data);
+    const {data} = e;
+    console.log("data: ", data);
 };
 ```
 
@@ -201,20 +211,24 @@ onmessage = function (e) {
 `self.postMessage()`方法用来向主线程发送消息，下面是一个例子(根据主线程发来的数据，Worker 线程可以调用不同的方法)：
 
 ```js
-self.addEventListener('message', function (e) {
-  var data = e.data;
-  switch (data.cmd) {
-    case 'start':
-      self.postMessage('WORKER STARTED: ' + data.msg);
-      break;
-    case 'stop':
-      self.postMessage('WORKER STOPPED: ' + data.msg);
-      self.close(); // Terminates the worker.
-      break;
-    default:
-      self.postMessage('Unknown command: ' + data.msg);
-  };
-}, false);
+self.addEventListener(
+    "message",
+    function (e) {
+        var data = e.data;
+        switch (data.cmd) {
+            case "start":
+                self.postMessage("WORKER STARTED: " + data.msg);
+                break;
+            case "stop":
+                self.postMessage("WORKER STOPPED: " + data.msg);
+                self.close(); // Terminates the worker.
+                break;
+            default:
+                self.postMessage("Unknown command: " + data.msg);
+        }
+    },
+    false
+);
 ```
 
 3、关闭子线程
@@ -222,7 +236,7 @@ self.addEventListener('message', function (e) {
 `self.close()`用于在 Worker 内部关闭自身。
 
 ```js
-self.close(); 
+self.close();
 ```
 
 #### 3.3 Worker 子线程加载脚本
@@ -230,16 +244,16 @@ self.close();
 Worker 线程能够访问一个全局函数 `importScripts()` 来引入脚本，该函数接受 0 个或者多个 URI 作为参数来引入资源；以下例子都是合法的：
 
 ```js
-importScripts();                        /* 什么都不引入 */
-importScripts('foo.js');                /* 只引入 "foo.js" */
-importScripts('foo.js', 'bar.js');      /* 引入两个脚本 */
+importScripts(); /* 什么都不引入 */
+importScripts("foo.js"); /* 只引入 "foo.js" */
+importScripts("foo.js", "bar.js"); /* 引入两个脚本 */
 ```
 
 浏览器加载并运行每一个列出的脚本。每个脚本中的全局对象都能够被 worker 使用。如果脚本无法加载，将抛出 `NETWORK_ERROR` 异常，接下来的代码也无法执行。而之前执行的代码(包括使用 `window.setTimeout()` 异步执行的代码)依然能够运行。`importScripts()` 之后的函数声明依然会被保留，因为它们始终会在其他代码之前运行。
 
 > 注意： 脚本的下载顺序不固定，但执行时会按照传入 `importScripts()` 中的文件名顺序进行。这个过程是同步完成的；直到所有脚本都下载并运行完毕， `importScripts()` 才会返回。
 
-### 4. 同页面的Web Worker
+### 4. 同页面的 Web Worker
 
 通常情况下，Worker 载入的是一个单独的 JavaScript 脚本文件，但是也可以载入与主线程在同一个网页的代码。
 
@@ -260,7 +274,7 @@ importScripts('foo.js', 'bar.js');      /* 引入两个脚本 */
 然后，读取这一段嵌入页面的脚本，用 Worker 来处理。
 
 ```js
-var blob = new Blob([document.querySelector('#worker').textContent]);
+var blob = new Blob([document.querySelector("#worker").textContent]);
 var url = window.URL.createObjectURL(blob);
 var worker = new Worker(url);
 
@@ -271,50 +285,50 @@ worker.onmessage = function (e) {
 
 上面代码中，先将嵌入网页的脚本代码，转成一个二进制对象，然后为这个二进制对象生成 URL，再让 Worker 加载这个 URL。这样就做到了，主线程和 Worker 的代码都在同一个网页上面。
 
-### 5. Webpack项目中使用Web Worker
+### 5. Webpack 项目中使用 Web Worker
 
-在webpack中使用Worker主要是需要`worker-loader`来加载。
+在 webpack 中使用 Worker 主要是需要`worker-loader`来加载。
 
 使用参考：https://webpack.docschina.org/loaders/worker-loader/
 
-#### 5.1 安装worker-loader
+#### 5.1 安装 worker-loader
 
-项目工程目录下安装loader,目地是让Webpack识别worker文件
+项目工程目录下安装 loader,目地是让 Webpack 识别 worker 文件
 
 ```text
 npm install -D worker-loader
 ```
 
-#### 5.2 webpack配置文件添加load
+#### 5.2 webpack 配置文件添加 load
 
-向webpack配置文件中添加loader的配置
+向 webpack 配置文件中添加 loader 的配置
 
 ```js
 module.exports = {
   module: {
     rules: [
       {
-        test: /\.worker\.js$/,
-        use: [
-          {
-            loader: 'worker-loader',
-            options: {
-              inline: 'fallback',
-            },
-          },
-          // 配置babel，让worker文件里面也能使用ES6语法。
-          {
-            loader: 'babel-loader',
-            options: { presets: ['babel-preset-env'], }, // 这行可以忽略
-          },
-        ],
+          test: /\.worker\.js$/,
+          use: [
+              {
+                  loader: "worker-loader",
+                  options: {
+                      inline: "fallback",
+                  },
+              },
+              // 配置babel，让worker文件里面也能使用ES6语法。
+              {
+                  loader: "babel-loader",
+                  options: {presets: ["babel-preset-env"]}, // 这行可以忽略
+              },
+          ],
       },
     ],
   },
 };
 ```
 
-option选项：
+option 选项：
 
 - inline
 
@@ -330,32 +344,35 @@ option选项：
 
   类型： `String` 默认值： `null`，重写 worker 脚本的下载路径。 如果未指定， 则使用与其他 webpack 资源相同的公共路径。
 
-#### 5.3 使用worker文件
+#### 5.3 使用 worker 文件
 
-注意：创建的Worker文件必须以`worker.js`结尾，
+注意：创建的 Worker 文件必须以`worker.js`结尾，
 
 file.worker.js:
 
 ```js
-onmessage = function(ev){    // 也可以是self.onmessage
-  // 工作线程收到主线程的ev.data
+onmessage = function (ev) {
+    // 也可以是self.onmessage
+    // 工作线程收到主线程的ev.data
 };
-let msg = '工作线程向主线程发送消息'
-postMessage(msg);     // 也可以是self.postMessage, msg可以直接是对象
+let msg = "工作线程向主线程发送消息";
+postMessage(msg); // 也可以是self.postMessage, msg可以直接是对象
 ```
 
 使用：**App.js**
 
 ```js
-import Worker from './file.worker.js';
+import Worker from "./file.worker.js";
 
 const worker = new Worker();
 worker.postMessage({ a: 1 });
-worker.onmessage = function (event) {};
-worker.addEventListener('message', function (event) {});
+worker.onmessage = function (event) {
+};
+worker.addEventListener("message", function (event) {
+});
 ```
 
-#### 5.4 直接在代码中使用worker-loader
+#### 5.4 直接在代码中使用 worker-loader
 
 ```javascript
 // main.js
@@ -364,41 +381,42 @@ var MyWorker = require("worker-loader!./file.js");
 
 var worker = new MyWorker();
 worker.postMessage({a: 1});
-worker.onmessage = function(event) { /* 操作 */ };
-worker.addEventListener("message", function(event) { /* 操作 */ });
-
+worker.onmessage = function (event) {
+    /* 操作 */
+};
+worker.addEventListener("message", function (event) {
+    /* 操作 */
+});
 ```
-
-
-
-
 
 ### 6. 实际例子
 
-#### 6.1 原生html例子
+#### 6.1 原生 html 例子
 
-创建一个文件夹，文件夹内创建下面2个文件：
+创建一个文件夹，文件夹内创建下面 2 个文件：
 
-1、创建一个demo.js文件，内容如下：
+1、创建一个 demo.js 文件，内容如下：
 
 ```js
-var i=0;
-function count(){
+var i = 0;
+
+function count() {
     setInterval(function () {
         i++;
         postMessage(i);
-    },1000)
+    }, 1000);
 }
+
 count();
 ```
 
-2、创建index.html文件，内容如下：
+2、创建 index.html 文件，内容如下：
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"/>
     <title>Title</title>
 </head>
 <body>
@@ -410,20 +428,22 @@ count();
 <button onclick="work(1)">停止工作</button>
 <script>
     var worker;
+
     function work(type) {
-        if (typeof(Worker) !== "undefined") {
-            if(type === 0){
+        if (typeof Worker !== "undefined") {
+            if (type === 0) {
                 worker = new Worker("demo.js");
                 console.log(worker);
-                worker.onmessage=function(event){
-                    document.getElementById("result").innerHTML=event.data;
+                worker.onmessage = function (event) {
+                    document.getElementById("result").innerHTML = event.data;
                 };
-            }else {
+            } else {
                 worker.terminate();
                 worker = null;
             }
+        } else {
+            alert("抱歉! Web Worker 不支持");
         }
-        else { alert("抱歉! Web Worker 不支持"); }
     }
 </script>
 </body>
@@ -466,8 +486,6 @@ pollingWorker.postMessage('init');
 
 上面代码中，Worker 每秒钟轮询一次数据，然后跟缓存做比较。如果不一致，就说明服务端有了新的变化，因此就要通知主线程。
 
-
-
 ## 三 Web Socket
 
 ### 1、为什么需要 WebSocket？
@@ -486,7 +504,7 @@ pollingWorker.postMessage('init');
 
 ### 2、简介
 
-WebSocket 协议在2008年诞生，2011年成为国际标准。所有浏览器都已经支持了。
+WebSocket 协议在 2008 年诞生，2011 年成为国际标准。所有浏览器都已经支持了。
 
 它的最大特点就是，服务器可以主动向客户端推送信息，客户端也可以主动向服务器发送信息，是真正的双向平等对话，属于[服务器推送技术](https://en.wikipedia.org/wiki/Push_technology)的一种。
 
@@ -496,7 +514,7 @@ WebSocket 协议在2008年诞生，2011年成为国际标准。所有浏览器�
 
 （1）建立在 TCP 协议之上，服务器端的实现比较容易。
 
-（2）与 HTTP 协议有着良好的兼容性。默认端口也是80和443，并且握手阶段采用 HTTP 协议，因此握手时不容易屏蔽，能通过各种 HTTP 代理服务器。
+（2）与 HTTP 协议有着良好的兼容性。默认端口也是 80 和 443，并且握手阶段采用 HTTP 协议，因此握手时不容易屏蔽，能通过各种 HTTP 代理服务器。
 
 （3）数据格式比较轻量，性能开销小，通信高效。
 
@@ -520,20 +538,20 @@ WebSocket 的用法相当简单。
 
 > ```javascript
 > var ws = new WebSocket("wss://echo.websocket.org");
-> 
-> ws.onopen = function(evt) { 
->   console.log("Connection open ..."); 
+>
+> ws.onopen = function (evt) {
+>   console.log("Connection open ...");
 >   ws.send("Hello WebSockets!");
 > };
-> 
-> ws.onmessage = function(evt) {
->   console.log( "Received Message: " + evt.data);
+>
+> ws.onmessage = function (evt) {
+>   console.log("Received Message: " + evt.data);
 >   ws.close();
 > };
-> 
-> ws.onclose = function(evt) {
+>
+> ws.onclose = function (evt) {
 >   console.log("Connection closed.");
-> };      
+> };
 > ```
 
 ### 4、客户端的 API
@@ -545,7 +563,7 @@ WebSocket 客户端的 API 如下。
 WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 
 > ```javascript
-> var ws = new WebSocket('ws://localhost:8080');
+> var ws = new WebSocket("ws://localhost:8080");
 > ```
 
 执行上面语句之后，客户端就会与服务器进行连接。
@@ -556,10 +574,10 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 
 `readyState`属性返回实例对象的当前状态，共有四种。
 
-> - CONNECTING：值为0，表示正在连接。
-> - OPEN：值为1，表示连接成功，可以通信了。
-> - CLOSING：值为2，表示连接正在关闭。
-> - CLOSED：值为3，表示连接已经关闭，或者打开连接失败。
+> - CONNECTING：值为 0，表示正在连接。
+> - OPEN：值为 1，表示连接成功，可以通信了。
+> - CLOSING：值为 2，表示连接正在关闭。
+> - CLOSED：值为 3，表示连接已经关闭，或者打开连接失败。
 
 下面是一个示例。
 
@@ -589,15 +607,15 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 
 > ```javascript
 > ws.onopen = function () {
->   ws.send('Hello Server!');
-> }
+>   ws.send("Hello Server!");
+> };
 > ```
 
 如果要指定多个回调函数，可以使用`addEventListener`方法。
 
 > ```javascript
-> ws.addEventListener('open', function (event) {
->   ws.send('Hello Server!');
+> ws.addEventListener("open", function (event) {
+>   ws.send("Hello Server!");
 > });
 > ```
 
@@ -606,14 +624,14 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 实例对象的`onclose`属性，用于指定连接关闭后的回调函数。
 
 > ```javascript
-> ws.onclose = function(event) {
+> ws.onclose = function (event) {
 >   var code = event.code;
 >   var reason = event.reason;
 >   var wasClean = event.wasClean;
 >   // handle close event
 > };
-> 
-> ws.addEventListener("close", function(event) {
+>
+> ws.addEventListener("close", function (event) {
 >   var code = event.code;
 >   var reason = event.reason;
 >   var wasClean = event.wasClean;
@@ -626,12 +644,12 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 实例对象的`onmessage`属性，用于指定收到服务器数据后的回调函数。
 
 > ```javascript
-> ws.onmessage = function(event) {
+> ws.onmessage = function (event) {
 >   var data = event.data;
 >   // 处理数据
 > };
-> 
-> ws.addEventListener("message", function(event) {
+>
+> ws.addEventListener("message", function (event) {
 >   var data = event.data;
 >   // 处理数据
 > });
@@ -640,16 +658,16 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 注意，服务器数据可能是文本，也可能是二进制数据（`blob`对象或`Arraybuffer`对象）。
 
 > ```javascript
-> ws.onmessage = function(event){
->   if(typeof event.data === String) {
+> ws.onmessage = function (event) {
+>   if (typeof event.data === String) {
 >     console.log("Received data string");
 >   }
-> 
->   if(event.data instanceof ArrayBuffer){
+>
+>   if (event.data instanceof ArrayBuffer) {
 >     var buffer = event.data;
 >     console.log("Received arraybuffer");
 >   }
-> }
+> };
 > ```
 
 除了动态判断收到的数据类型，也可以使用`binaryType`属性，显式指定收到的二进制数据类型。
@@ -657,13 +675,13 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 > ```javascript
 > // 收到的是 blob 数据
 > ws.binaryType = "blob";
-> ws.onmessage = function(e) {
+> ws.onmessage = function (e) {
 >   console.log(e.data.size);
 > };
-> 
+>
 > // 收到的是 ArrayBuffer 数据
 > ws.binaryType = "arraybuffer";
-> ws.onmessage = function(e) {
+> ws.onmessage = function (e) {
 >   console.log(e.data.byteLength);
 > };
 > ```
@@ -675,15 +693,13 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 发送文本的例子。
 
 > ```javascript
-> ws.send('your message');
+> ws.send("your message");
 > ```
 
 发送 Blob 对象的例子。
 
 > ```javascript
-> var file = document
->   .querySelector('input[type="file"]')
->   .files[0];
+> var file = document.querySelector('input[type="file"]').files[0];
 > ws.send(file);
 > ```
 
@@ -706,7 +722,7 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 > ```javascript
 > var data = new ArrayBuffer(10000000);
 > socket.send(data);
-> 
+>
 > if (socket.bufferedAmount === 0) {
 >   // 发送完毕
 > } else {
@@ -719,11 +735,11 @@ WebSocket 对象作为一个构造函数，用于新建 WebSocket 实例。
 实例对象的`onerror`属性，用于指定报错时的回调函数。
 
 > ```javascript
-> socket.onerror = function(event) {
+> socket.onerror = function (event) {
 >   // handle error event
 > };
-> 
-> socket.addEventListener("error", function(event) {
+>
+> socket.addEventListener("error", function (event) {
 >   // handle error event
 > });
 > ```
@@ -752,17 +768,17 @@ WebSocket 服务器的实现，可以查看维基百科的[列表](https://en.wi
 
 > ```bash
 > #!/bin/bash
-> 
+>
 > echo 1
 > sleep 1
-> 
+>
 > echo 2
 > sleep 1
-> 
+>
 > echo 3
 > ```
 
-命令行下运行这个脚本，会输出1、2、3，每个值之间间隔1秒。
+命令行下运行这个脚本，会输出 1、2、3，每个值之间间隔 1 秒。
 
 > ```bash
 > $ bash ./counter.sh
@@ -780,14 +796,14 @@ WebSocket 服务器的实现，可以查看维基百科的[列表](https://en.wi
 上面的命令会启动一个 WebSocket 服务器，端口是`8080`。每当客户端连接这个服务器，就会执行`counter.sh`脚本，并将它的输出推送给客户端。
 
 > ```javascript
-> var ws = new WebSocket('ws://localhost:8080/');
-> 
-> ws.onmessage = function(event) {
+> var ws = new WebSocket("ws://localhost:8080/");
+>
+> ws.onmessage = function (event) {
 >   console.log(event.data);
 > };
 > ```
 
-上面是客户端的 JavaScript 代码，运行之后会在控制台依次输出1、2、3。
+上面是客户端的 JavaScript 代码，运行之后会在控制台依次输出 1、2、3。
 
 有了它，就可以很方便地将命令行的输出，发给浏览器。
 
@@ -809,12 +825,12 @@ WebSocket 服务器的实现，可以查看维基百科的[列表](https://en.wi
 websocketd 的实质，就是命令行的 WebSocket 代理。只要命令行可以执行的程序，都可以通过它与浏览器进行 WebSocket 通信。下面是一个 Node 实现的回声服务[`greeter.js`](https://github.com/joewalnes/websocketd/blob/master/examples/nodejs/greeter.js)。
 
 > ```javascript
-> process.stdin.setEncoding('utf8');
-> 
-> process.stdin.on('readable', function() {
+> process.stdin.setEncoding("utf8");
+>
+> process.stdin.on("readable", function () {
 >   var chunk = process.stdin.read();
 >   if (chunk !== null) {
->     process.stdout.write('data: ' + chunk);
+>     process.stdout.write("data: " + chunk);
 >   }
 > });
 > ```
@@ -827,14 +843,6 @@ websocketd 的实质，就是命令行的 WebSocket 代理。只要命令行可�
 
 官方仓库还有其他[各种语言](https://github.com/joewalnes/websocketd/tree/master/examples)的例子。
 
-
-
-## 四 WebGL加速
-
-
-
-
-
-
+## 四 WebGL 加速
 
 {% endraw %}
